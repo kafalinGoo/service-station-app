@@ -1,0 +1,18 @@
+{
+  "tests": [
+    {
+      "name": "Создать запрос на диагностику",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "service": "Диагностика двигателя",
+        "car": "Toyota Camry 2021",
+        "description": "Стук в двигателе",
+        "client_id": 1
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "notified_masters": 2 },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

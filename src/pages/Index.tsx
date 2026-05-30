@@ -1,5 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Icon from "@/components/ui/icon";
+
+const API = {
+  createRequest: "https://functions.poehali.dev/628f6c50-4120-4f96-a248-9d96677095e2",
+  getBids:       "https://functions.poehali.dev/474bd80e-7fe6-40b8-a4f2-9ef3144a6ae9",
+  submitBid:     "https://functions.poehali.dev/18647c14-ab2a-4a4e-ae2e-ca2d139dfe20",
+};
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -24,6 +30,28 @@ interface Master {
   online: boolean;
   avatar: string;
   completedOrders: number;
+}
+
+interface ApiMaster {
+  id: number;
+  name: string;
+  station: string;
+  specialty: string;
+  rating: number;
+  reviews_count: number;
+  completed_orders: number;
+  price_from: number;
+  online: boolean;
+  avatar: string;
+}
+
+interface Bid {
+  bid_id: number;
+  price: number;
+  comment: string;
+  status: string;
+  created_at: string;
+  master: ApiMaster;
 }
 
 interface Order {
@@ -233,14 +261,18 @@ function HomeScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
 }
 
 function NewRequestScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
-  const [step, setStep] = useState(1);
   const [selectedService, setSelectedService] = useState("");
-  const [selectedMaster, setSelectedMaster] = useState<number | null>(null);
   const [description, setDescription] = useState("");
-  const [car, setCar] = useState("Toyota Camry 2021");
-  const [date, setDate] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [car, setCar] = useState("");
   const [photos, setPhotos] = useState<{ url: string; name: string }[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // После отправки — экран ожидания откликов
+  const [requestId, setRequestId] = useState<number | null>(null);
+  const [notifiedCount, setNotifiedCount] = useState(0);
+  const [bids, setBids] = useState<Bid[]>([]);
+  const [polling, setPolling] = useState(false);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -255,217 +287,271 @@ function NewRequestScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
     setPhotos((prev) => prev.filter((_, i) => i !== idx));
   };
 
-  if (submitted) {
+  const fetchBids = useCallback(async (reqId: number) => {
+    try {
+      const res = await fetch(`${API.getBids}?request_id=${reqId}`);
+      const data = await res.json();
+      const parsed = typeof data === "string" ? JSON.parse(data) : data;
+      setBids(parsed.bids || []);
+    } catch {
+      // ignore polling errors
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!requestId || !polling) return;
+    fetchBids(requestId);
+    const interval = setInterval(() => fetchBids(requestId), 5000);
+    return () => clearInterval(interval);
+  }, [requestId, polling, fetchBids]);
+
+  const handleSubmit = async () => {
+    if (!selectedService || !car.trim()) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(API.createRequest, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          service: selectedService,
+          car: car.trim(),
+          description,
+          client_id: 1,
+        }),
+      });
+      const raw = await res.json();
+      const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      setRequestId(data.request_id);
+      setNotifiedCount(data.notified_masters);
+      setPolling(true);
+    } catch {
+      setError("Не удалось отправить запрос. Проверьте соединение.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Экран ожидания откликов ──────────────────────────────────────────────
+  if (requestId) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center animate-scale-in">
-        <div className="w-24 h-24 rounded-full border-gradient flex items-center justify-center relative">
-          <div className="w-[calc(100%-2px)] h-[calc(100%-2px)] rounded-full bg-background flex items-center justify-center">
-            <Icon name="CheckCircle" size={40} className="text-neon-cyan" />
+      <div className="flex flex-col gap-5 pb-4 animate-fade-in">
+        {/* Header */}
+        <div className="relative overflow-hidden rounded-2xl p-5 border border-neon-cyan/20 text-center"
+          style={{ background: "linear-gradient(135deg, hsla(185,100%,10%,0.4) 0%, hsla(270,80%,15%,0.2) 100%)" }}>
+          <div className="w-14 h-14 rounded-full bg-neon-cyan/10 border border-neon-cyan/30 flex items-center justify-center mx-auto mb-3">
+            <Icon name="CheckCircle" size={28} className="text-neon-cyan" />
+          </div>
+          <p className="text-xs font-mono-tech text-neon-cyan/70 uppercase tracking-widest mb-1">
+            Запрос #{requestId} отправлен
+          </p>
+          <h2 className="text-xl font-black text-white mb-1">Ждём отклики мастеров</h2>
+          <p className="text-xs text-muted-foreground">
+            Запрос разослан <span className="text-neon-cyan font-semibold">{notifiedCount}</span> мастерам по категории «{selectedService}»
+          </p>
+        </div>
+
+        {/* Детали запроса */}
+        <div className="card-neon rounded-xl p-4">
+          <p className="text-xs text-muted-foreground uppercase tracking-widest mb-3">Ваш запрос</p>
+          <div className="flex flex-col gap-2">
+            {[["Услуга", selectedService], ["Автомобиль", car], ["Описание", description || "—"]].map(([k, v]) => (
+              <div key={k} className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{k}</span>
+                <span className="text-white font-medium text-right max-w-[60%]">{v}</span>
+              </div>
+            ))}
+            {photos.length > 0 && (
+              <div className="flex justify-between text-sm items-center pt-1 border-t border-border mt-1">
+                <span className="text-muted-foreground">Фото</span>
+                <div className="flex gap-1">
+                  {photos.slice(0, 3).map((p, i) => (
+                    <img key={i} src={p.url} alt="" className="w-7 h-7 rounded-lg object-cover border border-neon-cyan/20" />
+                  ))}
+                  {photos.length > 3 && (
+                    <div className="w-7 h-7 rounded-lg bg-neon-cyan/10 border border-neon-cyan/20 flex items-center justify-center text-xs font-bold text-neon-cyan">
+                      +{photos.length - 3}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Отклики */}
         <div>
-          <h2 className="text-2xl font-black text-white mb-2">Запрос отправлен!</h2>
-          <p className="text-muted-foreground text-sm">ORD-2936 создан. Мастер свяжется с вами в течение 15 минут.</p>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
+              Отклики мастеров
+            </h3>
+            <div className="flex items-center gap-2">
+              {polling && bids.length === 0 && (
+                <span className="text-xs text-neon-cyan/70 font-mono-tech neon-pulse">ожидаем...</span>
+              )}
+              <span className="text-xs font-mono-tech text-neon-cyan bg-neon-cyan/10 border border-neon-cyan/20 px-2 py-0.5 rounded-full">
+                {bids.length}
+              </span>
+            </div>
+          </div>
+
+          {bids.length === 0 ? (
+            <div className="card-neon rounded-xl p-8 flex flex-col items-center gap-3 text-center">
+              <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
+                <Icon name="Clock" size={22} className="text-muted-foreground" />
+              </div>
+              <p className="text-sm text-muted-foreground">Мастера ещё не откликнулись</p>
+              <p className="text-xs text-muted-foreground/60">Обычно первые отклики приходят за 5–15 минут</p>
+              <div className="flex gap-1 mt-1">
+                {[0,1,2].map(i => (
+                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-neon-cyan/40 neon-pulse" style={{ animationDelay: `${i * 0.3}s` }} />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {bids.map((bid, i) => (
+                <div key={bid.bid_id} className="card-neon rounded-xl p-4 animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+                  <div className="flex items-start gap-3">
+                    <div className="relative">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold font-mono-tech flex-shrink-0 bg-neon-cyan/15 text-neon-cyan border border-neon-cyan/30">
+                        {bid.master.avatar}
+                      </div>
+                      {bid.master.online && (
+                        <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-neon-green border-2 border-background" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-white text-sm">{bid.master.name}</p>
+                      <p className="text-xs text-muted-foreground">{bid.master.station}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Stars rating={bid.master.rating} />
+                        <span className="text-xs font-mono-tech text-neon-cyan">{bid.master.rating}</span>
+                        <span className="text-xs text-muted-foreground">· {bid.master.completed_orders} заказов</span>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-lg font-black text-white font-mono-tech">{bid.price.toLocaleString("ru")} ₽</p>
+                      <p className="text-xs text-neon-green">Предложение</p>
+                    </div>
+                  </div>
+                  {bid.comment && (
+                    <div className="mt-3 px-3 py-2 rounded-lg bg-secondary/60 border border-border">
+                      <p className="text-xs text-foreground/80 italic">«{bid.comment}»</p>
+                    </div>
+                  )}
+                  <div className="flex gap-2 mt-3">
+                    <button
+                      onClick={() => setScreen("chat")}
+                      className="flex-1 py-2 rounded-lg text-xs font-bold border border-neon-cyan/30 text-neon-cyan hover:bg-neon-cyan/10 transition-all"
+                    >
+                      Написать
+                    </button>
+                    <button className="flex-1 py-2 rounded-lg text-xs font-bold btn-neon">
+                      Принять
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="card-neon rounded-xl p-4 w-full text-left">
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-muted-foreground">Услуга</span>
-            <span className="text-white font-medium">{selectedService || "Диагностика"}</span>
-          </div>
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-muted-foreground">Автомобиль</span>
-            <span className="text-white font-medium">{car}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Статус</span>
-            <StatusBadge status="new" />
-          </div>
-        </div>
-        <button onClick={() => { setSubmitted(false); setStep(1); setScreen("history"); }} className="btn-neon px-8 py-3 rounded-xl font-bold">
-          Перейти к заказам
+
+        <button
+          onClick={() => setScreen("home")}
+          className="py-3 rounded-xl border border-border text-muted-foreground text-sm font-semibold"
+        >
+          На главную
         </button>
       </div>
     );
   }
 
+  // ── Форма создания запроса ────────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-5 pb-4">
-      <div className="flex gap-2 items-center">
-        {[1, 2, 3].map((s) => (
-          <div key={s} className="flex items-center gap-2 flex-1">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold font-mono-tech border transition-all ${s <= step ? "bg-neon-cyan text-background border-neon-cyan glow-cyan" : "border-border text-muted-foreground"}`}>
-              {s < step ? "✓" : s}
-            </div>
-            {s < 3 && <div className={`flex-1 h-0.5 ${s < step ? "bg-neon-cyan" : "bg-border"} transition-all`} />}
-          </div>
-        ))}
+      <div>
+        <h2 className="text-lg font-black text-white mb-1">Новый запрос</h2>
+        <p className="text-xs text-muted-foreground">Запрос будет разослан всем мастерам по выбранной категории</p>
       </div>
-      <p className="text-xs text-muted-foreground font-mono-tech text-center">
-        {step === 1 && "ШАГ 1 / 3 — УСЛУГА И АВТОМОБИЛЬ"}
-        {step === 2 && "ШАГ 2 / 3 — ВЫБОР МАСТЕРА"}
-        {step === 3 && "ШАГ 3 / 3 — ДАТА И ПОДТВЕРЖДЕНИЕ"}
-      </p>
 
-      {step === 1 && (
-        <div className="flex flex-col gap-4 animate-fade-in">
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Тип услуги</label>
-            <div className="grid grid-cols-2 gap-2">
-              {services.map((s) => (
-                <button key={s} onClick={() => setSelectedService(s)} className={`py-2.5 px-3 rounded-xl text-sm text-left transition-all border ${selectedService === s ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border bg-secondary text-foreground/70 hover:border-neon-cyan/40"}`}>
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Автомобиль</label>
-            <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" value={car} onChange={(e) => setCar(e.target.value)} placeholder="Марка, модель, год" />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Описание проблемы</label>
-            <textarea className="input-neon w-full px-4 py-3 rounded-xl text-sm resize-none" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Опишите симптомы или что нужно сделать..." />
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Фото проблемы</label>
-            <input
-              id="photo-upload"
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={handlePhotoUpload}
-            />
-            {photos.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 mb-2">
-                {photos.map((p, idx) => (
-                  <div key={idx} className="relative rounded-xl overflow-hidden border border-neon-cyan/20 aspect-square">
-                    <img src={p.url} alt={p.name} className="w-full h-full object-cover" />
-                    <button
-                      onClick={() => removePhoto(idx)}
-                      className="absolute top-1 right-1 w-5 h-5 rounded-full bg-background/80 flex items-center justify-center"
-                    >
-                      <Icon name="X" size={10} className="text-white" />
-                    </button>
-                  </div>
-                ))}
-                {photos.length < 6 && (
-                  <label htmlFor="photo-upload" className="aspect-square rounded-xl border border-dashed border-neon-cyan/30 flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-neon-cyan/60 hover:bg-neon-cyan/5 transition-all">
-                    <Icon name="Plus" size={18} className="text-neon-cyan/50" />
-                  </label>
-                )}
-              </div>
-            )}
-            {photos.length === 0 && (
-              <label
-                htmlFor="photo-upload"
-                className="flex flex-col items-center justify-center gap-2 w-full py-5 rounded-xl border border-dashed border-neon-cyan/25 bg-neon-cyan/3 cursor-pointer hover:border-neon-cyan/50 hover:bg-neon-cyan/8 transition-all"
-              >
-                <div className="w-10 h-10 rounded-xl bg-neon-cyan/10 flex items-center justify-center">
-                  <Icon name="Camera" size={20} className="text-neon-cyan" />
-                </div>
-                <div className="text-center">
-                  <p className="text-sm text-white font-medium">Прикрепить фото</p>
-                  <p className="text-xs text-muted-foreground">до 6 фото · JPG, PNG</p>
-                </div>
-              </label>
-            )}
-            {photos.length > 0 && (
-              <p className="text-xs text-muted-foreground font-mono-tech mt-1">{photos.length} фото прикреплено</p>
-            )}
-          </div>
-
-          <button disabled={!selectedService} onClick={() => setStep(2)} className="btn-neon py-3 rounded-xl font-bold disabled:opacity-40 disabled:cursor-not-allowed">
-            Выбрать мастера →
-          </button>
-        </div>
-      )}
-
-      {step === 2 && (
-        <div className="flex flex-col gap-3 animate-fade-in">
-          <p className="text-xs text-muted-foreground">Доступные мастера по категории «{selectedService}»</p>
-          {masters.map((m) => (
-            <button key={m.id} onClick={() => setSelectedMaster(m.id)} className={`card-neon rounded-xl p-4 text-left transition-all border-2 ${selectedMaster === m.id ? "border-neon-cyan glow-cyan" : "border-transparent"}`}>
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Avatar initials={m.avatar} />
-                  {m.online && <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-neon-green border-2 border-background" />}
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-white text-sm">{m.name}</p>
-                  <p className="text-xs text-muted-foreground">{m.station}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Stars rating={m.rating} />
-                    <span className="text-xs font-mono-tech text-neon-cyan">{m.rating}</span>
-                    <span className="text-xs text-muted-foreground">· {m.completedOrders} заказов</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-white">{m.price}</p>
-                  <p className="text-xs text-neon-green">{m.online ? "Онлайн" : "Офлайн"}</p>
-                </div>
-              </div>
+      <div>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Тип услуги</label>
+        <div className="grid grid-cols-2 gap-2">
+          {services.map((s) => (
+            <button key={s} onClick={() => setSelectedService(s)} className={`py-2.5 px-3 rounded-xl text-sm text-left transition-all border ${selectedService === s ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border bg-secondary text-foreground/70 hover:border-neon-cyan/40"}`}>
+              {s}
             </button>
           ))}
-          <div className="flex gap-3 mt-2">
-            <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl border border-border text-muted-foreground text-sm font-semibold">← Назад</button>
-            <button disabled={!selectedMaster} onClick={() => setStep(3)} className="flex-1 btn-neon py-3 rounded-xl font-bold disabled:opacity-40">Далее →</button>
-          </div>
         </div>
-      )}
+      </div>
 
-      {step === 3 && (
-        <div className="flex flex-col gap-4 animate-fade-in">
-          <div className="card-neon rounded-xl p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-widest mb-3">Ваш заказ</p>
-            <div className="flex flex-col gap-2">
-              {[
-                ["Услуга", selectedService],
-                ["Мастер", masters.find(m => m.id === selectedMaster)?.name || ""],
-                ["Станция", masters.find(m => m.id === selectedMaster)?.station || ""],
-                ["Автомобиль", car],
-              ].map(([k, v]) => (
-                <div key={k} className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{k}</span>
-                  <span className="text-white font-medium">{v}</span>
+      <div>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Автомобиль</label>
+        <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" value={car} onChange={(e) => setCar(e.target.value)} placeholder="Марка, модель, год" />
+      </div>
+
+      <div>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Описание проблемы</label>
+        <textarea className="input-neon w-full px-4 py-3 rounded-xl text-sm resize-none" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Опишите симптомы или что нужно сделать..." />
+      </div>
+
+      <div>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Фото проблемы</label>
+        <input id="photo-upload" type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoUpload} />
+        {photos.length > 0 ? (
+          <>
+            <div className="grid grid-cols-3 gap-2 mb-2">
+              {photos.map((p, idx) => (
+                <div key={idx} className="relative rounded-xl overflow-hidden border border-neon-cyan/20 aspect-square">
+                  <img src={p.url} alt={p.name} className="w-full h-full object-cover" />
+                  <button onClick={() => removePhoto(idx)} className="absolute top-1 right-1 w-5 h-5 rounded-full bg-background/80 flex items-center justify-center">
+                    <Icon name="X" size={10} className="text-white" />
+                  </button>
                 </div>
               ))}
-              {photos.length > 0 && (
-                <div className="flex justify-between text-sm items-start pt-1 border-t border-border mt-1">
-                  <span className="text-muted-foreground">Фото</span>
-                  <div className="flex gap-1">
-                    {photos.slice(0, 3).map((p, i) => (
-                      <img key={i} src={p.url} alt="" className="w-8 h-8 rounded-lg object-cover border border-neon-cyan/20" />
-                    ))}
-                    {photos.length > 3 && (
-                      <div className="w-8 h-8 rounded-lg bg-neon-cyan/10 border border-neon-cyan/20 flex items-center justify-center text-xs font-bold text-neon-cyan">
-                        +{photos.length - 3}
-                      </div>
-                    )}
-                  </div>
-                </div>
+              {photos.length < 6 && (
+                <label htmlFor="photo-upload" className="aspect-square rounded-xl border border-dashed border-neon-cyan/30 flex items-center justify-center cursor-pointer hover:border-neon-cyan/60 hover:bg-neon-cyan/5 transition-all">
+                  <Icon name="Plus" size={18} className="text-neon-cyan/50" />
+                </label>
               )}
             </div>
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Желаемая дата и время</label>
-            <input type="datetime-local" className="input-neon w-full px-4 py-3 rounded-xl text-sm" value={date} onChange={(e) => setDate(e.target.value)} />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Способ связи</label>
-            <div className="grid grid-cols-3 gap-2">
-              {["Телефон", "Чат", "WhatsApp"].map((c) => (
-                <button key={c} className="py-2 rounded-lg border border-neon-cyan/30 text-neon-cyan text-sm hover:bg-neon-cyan/10 transition-all">{c}</button>
-              ))}
+            <p className="text-xs text-muted-foreground font-mono-tech">{photos.length} фото прикреплено</p>
+          </>
+        ) : (
+          <label htmlFor="photo-upload" className="flex flex-col items-center justify-center gap-2 w-full py-5 rounded-xl border border-dashed border-neon-cyan/25 cursor-pointer hover:border-neon-cyan/50 hover:bg-neon-cyan/5 transition-all">
+            <div className="w-10 h-10 rounded-xl bg-neon-cyan/10 flex items-center justify-center">
+              <Icon name="Camera" size={20} className="text-neon-cyan" />
             </div>
-          </div>
-          <div className="flex gap-3">
-            <button onClick={() => setStep(2)} className="flex-1 py-3 rounded-xl border border-border text-muted-foreground text-sm font-semibold">← Назад</button>
-            <button onClick={() => setSubmitted(true)} className="flex-1 btn-neon py-3 rounded-xl font-bold">Отправить запрос</button>
-          </div>
-        </div>
+            <div className="text-center">
+              <p className="text-sm text-white font-medium">Прикрепить фото</p>
+              <p className="text-xs text-muted-foreground">до 6 фото · JPG, PNG</p>
+            </div>
+          </label>
+        )}
+      </div>
+
+      {error && (
+        <p className="text-xs text-destructive bg-destructive/10 border border-destructive/30 px-3 py-2 rounded-lg">{error}</p>
       )}
+
+      <button
+        disabled={!selectedService || !car.trim() || loading}
+        onClick={handleSubmit}
+        className="btn-neon py-3 rounded-xl font-bold disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      >
+        {loading ? (
+          <>
+            <div className="w-4 h-4 rounded-full border-2 border-background border-t-transparent animate-spin" />
+            Отправляем...
+          </>
+        ) : (
+          <>
+            <Icon name="Send" size={16} />
+            Разослать мастерам
+          </>
+        )}
+      </button>
     </div>
   );
 }

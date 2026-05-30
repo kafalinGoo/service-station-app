@@ -1,0 +1,18 @@
+{
+  "tests": [
+    {
+      "name": "Мастер откликается на запрос",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "request_id": 1,
+        "master_id": 2,
+        "price": 3500,
+        "comment": "Сделаем быстро и качественно!"
+      },
+      "expectedStatus": 200,
+      "expectedBody": { "bid_id": "number" },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

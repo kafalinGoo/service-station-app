@@ -1,0 +1,5 @@
+{
+  "submit-bid": "https://functions.poehali.dev/18647c14-ab2a-4a4e-ae2e-ca2d139dfe20",
+  "get-bids": "https://functions.poehali.dev/474bd80e-7fe6-40b8-a4f2-9ef3144a6ae9",
+  "create-request": "https://functions.poehali.dev/628f6c50-4120-4f96-a248-9d96677095e2"
+}
