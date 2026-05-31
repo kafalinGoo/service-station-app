@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Декодировать реальный VIN Toyota",
+      "method": "GET",
+      "path": "/?vin=JT2BF22K1W0058685",
+      "expectedStatus": 200,
+      "expectedBody": { "vin": "JT2BF22K1W0058685" },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Короткий VIN — ошибка",
+      "method": "GET",
+      "path": "/?vin=ABC123",
+      "expectedStatus": 400,
+      "bodyMatcher": "partial",
+      "expectedBody": {}
+    }
+  ]
+}

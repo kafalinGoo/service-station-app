@@ -5,6 +5,7 @@ const API = {
   createRequest: "https://functions.poehali.dev/628f6c50-4120-4f96-a248-9d96677095e2",
   getBids:       "https://functions.poehali.dev/474bd80e-7fe6-40b8-a4f2-9ef3144a6ae9",
   submitBid:     "https://functions.poehali.dev/18647c14-ab2a-4a4e-ae2e-ca2d139dfe20",
+  decodeVin:     "https://functions.poehali.dev/50d346e2-4e25-47c2-bdc1-aa10367a98ff",
 };
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -268,6 +269,38 @@ function NewRequestScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // VIN
+  const [vin, setVin] = useState("");
+  const [vinLoading, setVinLoading] = useState(false);
+  const [vinError, setVinError] = useState("");
+  const [vinDetails, setVinDetails] = useState("");
+
+  const handleVinDecode = async () => {
+    const cleaned = vin.trim().toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/g, "");
+    if (cleaned.length !== 17) {
+      setVinError("VIN должен содержать 17 символов");
+      return;
+    }
+    setVinLoading(true);
+    setVinError("");
+    setVinDetails("");
+    try {
+      const res = await fetch(`${API.decodeVin}?vin=${cleaned}`);
+      const raw = await res.json();
+      const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (!res.ok || data.error) {
+        setVinError(data.error || "VIN не распознан");
+      } else {
+        setCar(data.car);
+        setVinDetails(data.details || "");
+      }
+    } catch {
+      setVinError("Ошибка соединения");
+    } finally {
+      setVinLoading(false);
+    }
+  };
+
   // После отправки — экран ожидания откликов
   const [requestId, setRequestId] = useState<number | null>(null);
   const [notifiedCount, setNotifiedCount] = useState(0);
@@ -484,6 +517,42 @@ function NewRequestScreen({ setScreen }: { setScreen: (s: Screen) => void }) {
             </button>
           ))}
         </div>
+      </div>
+
+      <div>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Определить по VIN</label>
+        <div className="flex gap-2">
+          <input
+            className="input-neon flex-1 px-4 py-3 rounded-xl text-sm font-mono tracking-widest uppercase"
+            value={vin}
+            onChange={(e) => { setVin(e.target.value.toUpperCase()); setVinError(""); setVinDetails(""); }}
+            placeholder="17 символов VIN"
+            maxLength={17}
+          />
+          <button
+            onClick={handleVinDecode}
+            disabled={vin.trim().length < 17 || vinLoading}
+            className="btn-neon px-4 py-3 rounded-xl font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 whitespace-nowrap"
+          >
+            {vinLoading
+              ? <div className="w-4 h-4 rounded-full border-2 border-background border-t-transparent animate-spin" />
+              : <Icon name="ScanLine" size={16} />
+            }
+            {vinLoading ? "Запрос..." : "Найти"}
+          </button>
+        </div>
+        {vinError && (
+          <p className="text-xs text-destructive mt-1.5 flex items-center gap-1">
+            <Icon name="AlertCircle" size={12} />
+            {vinError}
+          </p>
+        )}
+        {vinDetails && (
+          <div className="mt-2 px-3 py-2 rounded-lg bg-neon-cyan/5 border border-neon-cyan/20 flex items-center gap-2">
+            <Icon name="CheckCircle" size={14} className="text-neon-cyan flex-shrink-0" />
+            <p className="text-xs text-neon-cyan/80">{vinDetails}</p>
+          </div>
+        )}
       </div>
 
       <div>
