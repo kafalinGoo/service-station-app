@@ -106,7 +106,7 @@ export default function Index() {
           {/* Клиентские экраны */}
           {screen === "home"             && <HomeScreen setScreen={setScreen} goToNewRequest={goToNewRequest} />}
           {screen === "new-request"      && <NewRequestScreen setScreen={setScreen} targetMasterId={targetMasterId} />}
-          {screen === "history"          && <HistoryScreen setScreen={setScreen} />}
+          {screen === "history"          && <HistoryScreen setScreen={setScreen} user={user} />}
           {screen === "chat"             && <ChatScreen />}
           {screen === "reviews"          && <ReviewsScreen />}
           {/* Мастер */}

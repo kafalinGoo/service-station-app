@@ -1,7 +1,7 @@
 {
   "tests": [
     {
-      "name": "Получить отклики по запросу",
+      "name": "Отклики по заявке",
       "method": "GET",
       "path": "/?request_id=1",
       "expectedStatus": 200,
@@ -9,17 +9,17 @@
       "bodyMatcher": "partial"
     },
     {
-      "name": "Входящие заявки для мастера",
+      "name": "История заявок клиента",
       "method": "GET",
-      "path": "/?master_id=1&mode=incoming",
+      "path": "/?client_id=1",
       "expectedStatus": 200,
       "expectedBody": { "count": 0 },
       "bodyMatcher": "partial"
     },
     {
-      "name": "Мои отклики мастера",
+      "name": "Входящие заявки мастера",
       "method": "GET",
-      "path": "/?master_id=1&mode=mybids",
+      "path": "/?master_id=1&mode=incoming",
       "expectedStatus": 200,
       "expectedBody": { "count": 0 },
       "bodyMatcher": "partial"
