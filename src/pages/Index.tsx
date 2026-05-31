@@ -105,7 +105,7 @@ export default function Index() {
         <main className="flex-1 px-4 pt-4 overflow-y-auto" style={{ paddingBottom: "100px" }}>
           {/* Клиентские экраны */}
           {screen === "home"             && <HomeScreen setScreen={setScreen} goToNewRequest={goToNewRequest} />}
-          {screen === "new-request"      && <NewRequestScreen setScreen={setScreen} targetMasterId={targetMasterId} />}
+          {screen === "new-request"      && <NewRequestScreen setScreen={setScreen} targetMasterId={targetMasterId} user={user} />}
           {screen === "history"          && <HistoryScreen setScreen={setScreen} user={user} />}
           {screen === "chat"             && <ChatScreen />}
           {screen === "reviews"          && <ReviewsScreen />}

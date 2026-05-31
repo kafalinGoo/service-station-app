@@ -10,7 +10,7 @@ import { Stars, Avatar } from "./appHelpers";
 
 // ─── NewRequestScreen ─────────────────────────────────────────────────────────
 
-export function NewRequestScreen({ setScreen, targetMasterId }: { setScreen: (s: Screen) => void; targetMasterId: number | null }) {
+export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScreen: (s: Screen) => void; targetMasterId: number | null; user: AuthUser }) {
   const [selectedService, setSelectedService] = useState("");
   const [description, setDescription] = useState("");
   const [car, setCar] = useState("");
@@ -91,7 +91,7 @@ export function NewRequestScreen({ setScreen, targetMasterId }: { setScreen: (s:
           service: selectedService,
           car: car.trim(),
           description,
-          client_id: 1,
+          client_id: user.id,
           ...(targetMasterId ? { master_id: targetMasterId } : {}),
         }),
       });
