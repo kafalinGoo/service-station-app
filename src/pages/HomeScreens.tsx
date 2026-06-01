@@ -52,7 +52,7 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
             { icon: "Shield", label: "Кузов" },
             { icon: "Wind", label: "Климат" },
             { icon: "Settings", label: "Двигатель" },
-            { icon: "Circle", label: "Шины" },
+            { icon: "_tires", label: "Шины" },
             { icon: "Languages", label: "Русификация" },
             { icon: "MoreHorizontal", label: "Другое" },
           ].map((c) => (
@@ -60,6 +60,9 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
               {c.icon === "_chassis" ? (
                 <img src="https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/bucket/b3e8f2fc-fe5b-42dd-8794-a42a2cf9ac97.jpg"
                   alt="Ходовая" className="w-5 h-5 object-contain" style={{ filter: "invert(1) sepia(1) saturate(5) hue-rotate(155deg)" }} />
+              ) : c.icon === "_tires" ? (
+                <img src="https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/bucket/f29cfc8b-b321-4518-b100-5a58ac5840aa.jpg"
+                  alt="Шины" className="w-5 h-5 object-contain" style={{ filter: "invert(1) sepia(1) saturate(5) hue-rotate(155deg)" }} />
               ) : (
                 <Icon name={c.icon} size={20} className="text-neon-cyan" />
               )}
