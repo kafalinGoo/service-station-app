@@ -871,25 +871,6 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
       )}
 
       <div>
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">Способы оплаты</h3>
-          <span className="text-xs text-neon-cyan">+ Добавить</span>
-        </div>
-        {[{ type: "Visa", last4: "4842", isDefault: true }, { type: "Mir", last4: "9201", isDefault: false }].map((card) => (
-          <div key={card.last4} className="card-neon rounded-xl p-4 mb-2 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-              <Icon name="CreditCard" size={20} className="text-accent" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-white text-sm">{card.type} •••• {card.last4}</p>
-              {card.isDefault && <p className="text-xs text-neon-green">Основная карта</p>}
-            </div>
-            <Icon name="ChevronRight" size={16} className="text-muted-foreground" />
-          </div>
-        ))}
-      </div>
-
-      <div>
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-3">Настройки</h3>
         {[
           { icon: "Bell", label: "Уведомления", value: "Включены", danger: false, action: null },
