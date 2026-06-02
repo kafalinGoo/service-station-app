@@ -973,7 +973,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
           { icon: "Bell", label: "Уведомления", value: "Включены", danger: false, action: null },
           { icon: "Globe", label: "Язык", value: "Русский", danger: false, action: null },
           { icon: "Shield", label: "Безопасность", value: "", danger: false, action: null },
-          { icon: "HelpCircle", label: "Поддержка", value: "", danger: false, action: null },
+          { icon: "HelpCircle", label: "Поддержка", value: "", danger: false, action: () => window.location.href = `mailto:kafalin@rambler.ru?subject=${encodeURIComponent("Обращение в поддержку AutoTech")}&body=${encodeURIComponent("Опишите вашу проблему или вопрос:\n\n")}` },
           { icon: "LogOut", label: "Выйти", value: "", danger: true, action: onLogout },
         ].map((item) => (
           <div key={item.label} onClick={item.action ?? undefined}
