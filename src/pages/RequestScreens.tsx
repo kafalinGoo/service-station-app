@@ -820,11 +820,6 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
                 })}
               </div>
             </div>
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Цена от (₽)</label>
-              <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" type="number" value={masterPriceFrom}
-                onChange={(e) => setMasterPriceFrom(e.target.value)} placeholder="Например: 1500" min="0" />
-            </div>
             {masterError && (
               <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-destructive/10 border border-destructive/30">
                 <Icon name="AlertCircle" size={14} className="text-destructive flex-shrink-0" />
