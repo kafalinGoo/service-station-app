@@ -20,7 +20,7 @@ export default function AuthScreen({ onAuth }: Props) {
   const [name, setName] = useState("");
   const [station, setStation] = useState("");
   const [address, setAddress] = useState("");
-  const [specialty, setSpecialty] = useState("ТО");
+  const [specialties, setSpecialties] = useState<string[]>([]);
   const [showPass, setShowPass] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -53,7 +53,7 @@ export default function AuthScreen({ onAuth }: Props) {
     try {
       const bodyData: Record<string, string> = mode === "login"
         ? { action: "login", phone: phoneRaw, password }
-        : { action: "register", phone: phoneRaw, password, name: name.trim(), role, specialty, station: station.trim() || "Моя станция", address: address.trim() || undefined };
+        : { action: "register", phone: phoneRaw, password, name: name.trim(), role, specialty: specialties.join(", ") || "ТО", station: station.trim() || "Моя станция", address: address.trim() || undefined };
 
       const res = await fetch(API.auth, {
         method: "POST",
@@ -171,14 +171,20 @@ export default function AuthScreen({ onAuth }: Props) {
                   onChange={(e) => setAddress(e.target.value)} placeholder="Например: ул. Ленина, 15" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Специализация</label>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">
+                  Специализация
+                  {specialties.length > 0 && <span className="text-neon-cyan ml-1 normal-case font-normal">· выбрано {specialties.length}</span>}
+                </label>
                 <div className="flex flex-wrap gap-2">
-                  {SPECIALTIES.map((s) => (
-                    <button key={s} onClick={() => setSpecialty(s)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${specialty === s ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border text-muted-foreground hover:border-neon-cyan/30"}`}>
-                      {s}
-                    </button>
-                  ))}
+                  {SPECIALTIES.map((s) => {
+                    const active = specialties.includes(s);
+                    return (
+                      <button key={s} onClick={() => setSpecialties(prev => active ? prev.filter(x => x !== s) : [...prev, s])}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${active ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border text-muted-foreground hover:border-neon-cyan/30"}`}>
+                        {active && <span className="mr-1">✓</span>}{s}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </>

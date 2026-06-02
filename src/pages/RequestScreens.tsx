@@ -602,7 +602,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
   const SPECIALTIES = ["ТО", "Двигатели", "Электрика", "Ходовая", "Кузов", "Шиномонтаж", "Русификация"];
   const [editMaster, setEditMaster] = useState(false);
   const [masterStation, setMasterStation] = useState("");
-  const [masterSpecialty, setMasterSpecialty] = useState("");
+  const [masterSpecialties, setMasterSpecialties] = useState<string[]>([]);
   const [masterAddress, setMasterAddress] = useState("");
   const [masterCity, setMasterCity] = useState("");
   const [masterPriceFrom, setMasterPriceFrom] = useState("");
@@ -622,7 +622,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
         const data = typeof raw === "string" ? JSON.parse(raw) : raw;
         if (data.id) {
           setMasterStation(data.station || "");
-          setMasterSpecialty(data.specialty || "");
+          setMasterSpecialties(data.specialty ? data.specialty.split(", ").filter(Boolean) : []);
           setMasterAddress(data.address || "");
           setMasterCity(data.city || "");
           setMasterPriceFrom(data.price_from ? String(data.price_from) : "");
@@ -640,7 +640,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
       const data = typeof raw === "string" ? JSON.parse(raw) : raw;
       if (res.ok && data.id) {
         setMasterStation(data.station || "");
-        setMasterSpecialty(data.specialty || "");
+        setMasterSpecialties(data.specialty ? data.specialty.split(", ").filter(Boolean) : []);
         setMasterAddress(data.address || "");
         setMasterCity(data.city || "");
         setMasterPriceFrom(data.price_from ? String(data.price_from) : "");
@@ -656,7 +656,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
     try {
       const payload: Record<string, string | number> = { action: "update_master", master_id: user.master_id };
       if (masterStation.trim()) payload.station = masterStation.trim();
-      if (masterSpecialty) payload.specialty = masterSpecialty;
+      if (masterSpecialties.length) payload.specialty = masterSpecialties.join(", ");
       payload.address = masterAddress.trim();
       if (masterPriceFrom) payload.price_from = parseInt(masterPriceFrom) || 0;
       const res = await fetch(API.auth, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
@@ -741,10 +741,14 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
               <Icon name="Wrench" size={16} className="text-neon-cyan flex-shrink-0" />
               <p className="text-sm text-white font-medium">{masterStation || "Не указана"}</p>
             </div>
-            {masterSpecialty && (
-              <div className="flex items-center gap-2">
-                <Icon name="Tag" size={16} className="text-accent flex-shrink-0" />
-                <p className="text-sm text-white">{masterSpecialty}</p>
+            {masterSpecialties.length > 0 && (
+              <div className="flex items-start gap-2">
+                <Icon name="Tag" size={16} className="text-accent flex-shrink-0 mt-0.5" />
+                <div className="flex flex-wrap gap-1">
+                  {masterSpecialties.map(s => (
+                    <span key={s} className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">{s}</span>
+                  ))}
+                </div>
               </div>
             )}
             {masterCity && (
@@ -800,14 +804,20 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
               </div>
             )}
             <div>
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Специализация</label>
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">
+                Специализация
+                {masterSpecialties.length > 0 && <span className="text-neon-cyan ml-1 normal-case font-normal">· {masterSpecialties.length}</span>}
+              </label>
               <div className="flex flex-wrap gap-2">
-                {SPECIALTIES.map((s) => (
-                  <button key={s} onClick={() => setMasterSpecialty(s)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${masterSpecialty === s ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border text-muted-foreground hover:border-neon-cyan/30"}`}>
-                    {s}
+                {SPECIALTIES.map((s) => {
+                  const active = masterSpecialties.includes(s);
+                  return (
+                  <button key={s} onClick={() => setMasterSpecialties(prev => active ? prev.filter(x => x !== s) : [...prev, s])}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${active ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border text-muted-foreground hover:border-neon-cyan/30"}`}>
+                    {active && <span className="mr-1">✓</span>}{s}
                   </button>
-                ))}
+                  );
+                })}
               </div>
             </div>
             <div>
