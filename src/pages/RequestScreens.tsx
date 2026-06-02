@@ -18,6 +18,9 @@ export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScree
     return saved.length === 1 ? saved[0].model : "";
   });
   const [city, setCity] = useState("");
+  const [cityLoading, setCityLoading] = useState(false);
+  const [cityEdit, setCityEdit] = useState(false);
+  const [cityInput, setCityInput] = useState("");
   const [photos, setPhotos] = useState<{ url: string; name: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -26,6 +29,27 @@ export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScree
   const carSuggestions = car.trim().length >= 2
     ? CAR_LIST.filter(c => c.toLowerCase().includes(car.toLowerCase())).slice(0, 6)
     : [];
+
+  useEffect(() => {
+    if (targetMasterId) return;
+    setCityLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json&accept-language=ru`,
+            { headers: { "User-Agent": "AutoTechApp/1.0" } }
+          );
+          const data = await res.json();
+          const addr = data.address || {};
+          const detected = addr.city || addr.town || addr.village || addr.municipality || "";
+          if (detected) { setCity(detected); setCityInput(detected); }
+        } catch { /* ignore */ }
+        finally { setCityLoading(false); }
+      },
+      () => { setCityLoading(false); }
+    );
+  }, [targetMasterId]);
 
   const [vin, setVin] = useState("");
   const [vinLoading, setVinLoading] = useState(false);
@@ -260,6 +284,40 @@ export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScree
           <p className="text-xs text-muted-foreground">Запрос будет разослан всем мастерам по выбранной категории</p>
         )}
       </div>
+
+      {!targetMasterId && (
+        <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-secondary border border-border">
+          <Icon name="MapPin" size={14} className="text-neon-cyan flex-shrink-0" />
+          {cityLoading ? (
+            <div className="flex items-center gap-2 flex-1">
+              <div className="w-3 h-3 rounded-full border-2 border-neon-cyan border-t-transparent animate-spin" />
+              <span className="text-xs text-muted-foreground">Определяю город...</span>
+            </div>
+          ) : cityEdit ? (
+            <div className="flex items-center gap-2 flex-1">
+              <input
+                className="input-neon flex-1 px-2 py-1 rounded-lg text-xs"
+                value={cityInput}
+                onChange={(e) => setCityInput(e.target.value)}
+                placeholder="Введите город"
+                autoFocus
+              />
+              <button onClick={() => { setCity(cityInput.trim()); setCityEdit(false); }}
+                className="text-xs text-neon-cyan font-semibold px-2 py-1 rounded-lg hover:bg-neon-cyan/10 transition-colors">
+                Ок
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between flex-1">
+              <span className="text-sm text-white">{city || <span className="text-muted-foreground">Город не определён</span>}</span>
+              <button onClick={() => { setCityInput(city); setCityEdit(true); }}
+                className="text-xs text-muted-foreground hover:text-neon-cyan transition-colors flex items-center gap-1">
+                <Icon name="Pencil" size={11} />изменить
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div>
         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Тип услуги</label>
