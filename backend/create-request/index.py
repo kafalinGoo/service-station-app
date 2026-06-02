@@ -86,6 +86,7 @@ def handler(event: dict, context) -> dict:
                 FROM t_p3896276_service_station_app.masters
                 WHERE (specialty = %s OR specialty LIKE %s OR specialty LIKE %s OR specialty LIKE %s)
                   AND city = %s
+                  AND notifications_enabled = TRUE
                 ORDER BY rating DESC, completed_orders DESC
                 LIMIT 10
                 """,
@@ -97,7 +98,8 @@ def handler(event: dict, context) -> dict:
                 SELECT id, name, station, specialty, rating, reviews_count,
                        completed_orders, price_from, online, avatar, address, city
                 FROM t_p3896276_service_station_app.masters
-                WHERE specialty = %s OR specialty LIKE %s OR specialty LIKE %s OR specialty LIKE %s
+                WHERE (specialty = %s OR specialty LIKE %s OR specialty LIKE %s OR specialty LIKE %s)
+                  AND notifications_enabled = TRUE
                 ORDER BY rating DESC, completed_orders DESC
                 LIMIT 10
                 """,

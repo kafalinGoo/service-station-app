@@ -630,6 +630,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
           setMasterPriceFrom(data.price_from ? String(data.price_from) : "");
           setMasterRating(data.rating ?? null);
           setMasterReviewsCount(data.reviews_count ?? 0);
+          setNotificationsEnabled(data.notifications_enabled !== false);
         }
       })
       .catch(() => { /* ignore */ });
@@ -708,7 +709,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
     setCars(updated); saveUserCars(updated); setShowForm(false);
   };
 
-  const [notificationsEnabled, setNotificationsEnabled] = useState(() => localStorage.getItem("notif_enabled") !== "false");
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [cpCurrent, setCpCurrent] = useState("");
   const [cpNew, setCpNew] = useState("");
@@ -998,7 +999,17 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
       <div>
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-3">Настройки</h3>
 
-        <div className="flex items-center gap-3 py-3 border-b border-border cursor-pointer" onClick={() => setNotificationsEnabled(p => { const next = !p; localStorage.setItem("notif_enabled", String(next)); return next; })}>
+        <div className="flex items-center gap-3 py-3 border-b border-border cursor-pointer" onClick={() => {
+          const next = !notificationsEnabled;
+          setNotificationsEnabled(next);
+          if (user.role === "master" && user.master_id) {
+            fetch(API.auth, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "update_master", master_id: user.master_id, notifications_enabled: next }),
+            }).catch(() => {});
+          }
+        }}>
           <Icon name={notificationsEnabled ? "Bell" : "BellOff"} size={18} className="text-neon-cyan" />
           <span className="flex-1 text-sm font-medium text-white">Уведомления</span>
           <div className={`w-11 h-6 rounded-full transition-colors relative ${notificationsEnabled ? "bg-neon-cyan" : "bg-secondary border border-border"}`}>

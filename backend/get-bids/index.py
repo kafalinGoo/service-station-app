@@ -324,7 +324,8 @@ def handler(event: dict, context) -> dict:
         cur.execute(
             f"""
             SELECT id, name, station, specialty, rating, reviews_count,
-                   completed_orders, price_from, online, avatar, address, city
+                   completed_orders, price_from, online, avatar, address, city,
+                   notifications_enabled
             FROM {SCHEMA}.masters WHERE id = %s
             """,
             (int(master_id),),
@@ -338,6 +339,7 @@ def handler(event: dict, context) -> dict:
             "id": row[0], "name": row[1], "station": row[2], "specialty": row[3],
             "rating": float(row[4]), "reviews_count": row[5], "completed_orders": row[6],
             "price_from": row[7], "online": row[8], "avatar": row[9], "address": row[10], "city": row[11],
+            "notifications_enabled": row[12] if row[12] is not None else True,
         })
 
     cur.close(); conn.close()

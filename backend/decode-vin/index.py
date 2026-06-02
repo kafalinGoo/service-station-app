@@ -219,12 +219,14 @@ def handler(event: dict, context) -> dict:
         if "price_from" in body:
             try: fields["price_from"] = int(body["price_from"])
             except (ValueError, TypeError): pass
+        if "notifications_enabled" in body:
+            fields["notifications_enabled"] = bool(body["notifications_enabled"])
         if not fields:
             cur.close(); conn.close()
             return err("Нет полей для обновления")
         set_clause = ", ".join(f"{k} = %s" for k in fields)
         cur.execute(
-            f"UPDATE {SCHEMA}.masters SET {set_clause} WHERE id = %s RETURNING id, name, station, specialty, address, price_from, city",
+            f"UPDATE {SCHEMA}.masters SET {set_clause} WHERE id = %s RETURNING id, name, station, specialty, address, price_from, city, notifications_enabled",
             (*fields.values(), int(master_id)),
         )
         row = cur.fetchone()
@@ -232,7 +234,7 @@ def handler(event: dict, context) -> dict:
             cur.close(); conn.close()
             return err("Мастер не найден", 404)
         conn.commit(); cur.close(); conn.close()
-        return ok({"id": row[0], "name": row[1], "station": row[2], "specialty": row[3], "address": row[4], "price_from": row[5], "city": row[6]})
+        return ok({"id": row[0], "name": row[1], "station": row[2], "specialty": row[3], "address": row[4], "price_from": row[5], "city": row[6], "notifications_enabled": row[7]})
 
     # ── POST action=change_password ───────────────────────────────────────────
     if action == "change_password":
