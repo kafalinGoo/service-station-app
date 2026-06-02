@@ -169,6 +169,10 @@ export default function AuthScreen({ onAuth }: Props) {
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Адрес</label>
                 <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" value={address}
                   onChange={(e) => setAddress(e.target.value)} placeholder="Например: ул. Ленина, 15" />
+                <p className="text-xs text-muted-foreground/60 mt-1 flex items-center gap-1">
+                  <Icon name="Sparkles" size={10} />
+                  Город определится автоматически по адресу
+                </p>
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Специализация</label>

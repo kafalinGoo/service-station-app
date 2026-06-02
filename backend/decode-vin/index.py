@@ -126,10 +126,28 @@ def handler(event: dict, context) -> dict:
             specialty = (body.get("specialty") or "ТО").strip()
             station = (body.get("station") or "Моя станция").strip()
             address = (body.get("address") or "").strip() or None
+            city = None
+            if address:
+                try:
+                    geo_url = f"https://nominatim.openstreetmap.org/search?q={urllib.parse.quote(address)}&format=json&addressdetails=1&limit=1&accept-language=ru"
+                    geo_req = urllib.request.Request(geo_url, headers={"User-Agent": "AutoTechApp/1.0"})
+                    with urllib.request.urlopen(geo_req, timeout=5) as geo_resp:
+                        geo_data = json.loads(geo_resp.read().decode())
+                    if geo_data:
+                        addr_parts = geo_data[0].get("address", {})
+                        city = (
+                            addr_parts.get("city") or
+                            addr_parts.get("town") or
+                            addr_parts.get("village") or
+                            addr_parts.get("municipality") or
+                            addr_parts.get("county")
+                        )
+                except Exception:
+                    pass
             cur.execute(
-                f"""INSERT INTO {SCHEMA}.masters (name, station, specialty, rating, reviews_count, completed_orders, price_from, online, avatar, address)
-                    VALUES (%s, %s, %s, 5.0, 0, 0, 1000, false, %s, %s) RETURNING id""",
-                (name, station, specialty, name[:2].upper(), address),
+                f"""INSERT INTO {SCHEMA}.masters (name, station, specialty, rating, reviews_count, completed_orders, price_from, online, avatar, address, city)
+                    VALUES (%s, %s, %s, 5.0, 0, 0, 1000, false, %s, %s, %s) RETURNING id""",
+                (name, station, specialty, name[:2].upper(), address, city),
             )
             master_id = cur.fetchone()[0]
         cur.execute(
