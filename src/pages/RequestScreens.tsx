@@ -606,6 +606,8 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
   const [masterAddress, setMasterAddress] = useState("");
   const [masterCity, setMasterCity] = useState("");
   const [masterPriceFrom, setMasterPriceFrom] = useState("");
+  const [masterRating, setMasterRating] = useState<number | null>(null);
+  const [masterReviewsCount, setMasterReviewsCount] = useState(0);
   const [masterSaving, setMasterSaving] = useState(false);
   const [masterError, setMasterError] = useState("");
   const [masterSuccess, setMasterSuccess] = useState(false);
@@ -626,6 +628,8 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
           setMasterAddress(data.address || "");
           setMasterCity(data.city || "");
           setMasterPriceFrom(data.price_from ? String(data.price_from) : "");
+          setMasterRating(data.rating ?? null);
+          setMasterReviewsCount(data.reviews_count ?? 0);
         }
       })
       .catch(() => { /* ignore */ });
@@ -644,6 +648,8 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
         setMasterAddress(data.address || "");
         setMasterCity(data.city || "");
         setMasterPriceFrom(data.price_from ? String(data.price_from) : "");
+        setMasterRating(data.rating ?? null);
+        setMasterReviewsCount(data.reviews_count ?? 0);
       }
     } catch { /* ignore */ }
     finally { setMasterLoading(false); }
@@ -718,7 +724,16 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
             <h2 className="text-lg font-bold text-white">{user.name}</h2>
             <p className="text-sm text-muted-foreground">{user.phone}</p>
             {user.role === "master" && (
-              <span className="text-xs px-2 py-0.5 rounded-full mt-1 inline-block bg-accent/15 text-accent border border-accent/30">Мастер</span>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/30">Мастер</span>
+                {masterRating !== null && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-yellow-400 text-sm">★</span>
+                    <span className="text-sm font-bold text-white font-mono-tech">{masterRating}</span>
+                    <span className="text-xs text-muted-foreground">· {masterReviewsCount} {masterReviewsCount === 1 ? "отзыв" : masterReviewsCount < 5 ? "отзыва" : "отзывов"}</span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
