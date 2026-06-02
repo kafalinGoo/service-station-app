@@ -791,7 +791,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
             <div>
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Адрес</label>
               <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" value={masterAddress}
-                onChange={(e) => setMasterAddress(e.target.value)} placeholder="Например: Москва, ул. Ленина, 15" />
+                onChange={(e) => setMasterAddress(e.target.value)} placeholder="Например: г. Москва, ул. Ленина, 15" />
               <p className="text-xs text-muted-foreground/60 mt-1 flex items-center gap-1">
                 <Icon name="Sparkles" size={10} />
                 Город определится автоматически по адресу

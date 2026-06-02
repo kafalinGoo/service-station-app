@@ -168,7 +168,7 @@ export default function AuthScreen({ onAuth }: Props) {
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Адрес</label>
                 <input className="input-neon w-full px-4 py-3 rounded-xl text-sm" value={address}
-                  onChange={(e) => setAddress(e.target.value)} placeholder="Например: Москва, ул. Ленина, 15" />
+                  onChange={(e) => setAddress(e.target.value)} placeholder="Например: г. Москва, ул. Ленина, 15" />
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">
