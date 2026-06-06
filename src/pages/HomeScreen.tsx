@@ -52,8 +52,13 @@ export function HomeScreen({ setScreen, goToNewRequest }: { setScreen: (s: Scree
           ].map((c) => (
             <button key={c.label} onClick={() => goToNewRequest()} className="card-neon rounded-xl p-3 flex flex-col items-center gap-1.5 hover:scale-105 transition-transform">
               {c.icon === "_chassis" ? (
-                <img src="https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/bucket/b3e8f2fc-fe5b-42dd-8794-a42a2cf9ac97.jpg"
-                  alt="Ходовая" className="w-5 h-5 object-contain" style={{ filter: "invert(1) sepia(1) saturate(5) hue-rotate(155deg)" }} />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5 text-neon-cyan" style={{ filter: "drop-shadow(0 0 3px currentColor)" }}>
+                  <circle cx="6" cy="17" r="3"/>
+                  <circle cx="18" cy="17" r="3"/>
+                  <path d="M9 17h6"/>
+                  <path d="M3 17V9l3-4h12l3 4v8"/>
+                  <path d="M6 9h12"/>
+                </svg>
               ) : c.icon === "_tires" ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-5 h-5 text-neon-cyan" style={{ filter: "drop-shadow(0 0 3px currentColor)" }}>
                   <circle cx="12" cy="12" r="10"/>
