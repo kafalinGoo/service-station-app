@@ -330,7 +330,7 @@ export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScree
       </div>
 
       <div>
-        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Определить по VIN</label>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">ОПРЕДЕЛИТЬ АВТОМОБИЛЬ ПО VIN</label>
         <div className="flex gap-2">
           <input
             className="input-neon flex-1 px-4 py-3 rounded-xl text-sm font-mono tracking-widest uppercase"
