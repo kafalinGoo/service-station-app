@@ -43,9 +43,22 @@ function SplashScreen({ onDone }: { onDone: () => void }) {
         </div>
 
         <div className="flex items-end gap-1">
-          <span className="text-3xl font-black font-mono-tech glow-text-cyan text-neon-cyan tracking-wider">AUTO</span>
+          <span className="text-3xl font-black font-mono-tech tracking-wider" style={{ animation: "neon-flicker 2.5s infinite" }}>AUTO</span>
           <span className="text-3xl font-black text-white tracking-wider">TECH</span>
         </div>
+        <style>{`
+          @keyframes neon-flicker {
+            0%   { color: hsl(185 100% 50%); text-shadow: 0 0 8px hsl(185 100% 50%), 0 0 20px hsl(185 100% 50%); }
+            5%   { color: hsl(185 100% 20%); text-shadow: none; }
+            10%  { color: hsl(185 100% 50%); text-shadow: 0 0 8px hsl(185 100% 50%), 0 0 20px hsl(185 100% 50%); }
+            15%  { color: hsl(185 100% 30%); text-shadow: 0 0 4px hsl(185 100% 50%); }
+            20%  { color: hsl(185 100% 50%); text-shadow: 0 0 8px hsl(185 100% 50%), 0 0 20px hsl(185 100% 50%); }
+            80%  { color: hsl(185 100% 50%); text-shadow: 0 0 8px hsl(185 100% 50%), 0 0 20px hsl(185 100% 50%); }
+            85%  { color: hsl(185 100% 15%); text-shadow: none; }
+            90%  { color: hsl(185 100% 50%); text-shadow: 0 0 8px hsl(185 100% 50%), 0 0 30px hsl(185 100% 50%); }
+            100% { color: hsl(185 100% 50%); text-shadow: 0 0 8px hsl(185 100% 50%), 0 0 20px hsl(185 100% 50%); }
+          }
+        `}</style>
 
         <p className="text-xs font-mono-tech text-muted-foreground uppercase tracking-widest">Станции ТО</p>
 
