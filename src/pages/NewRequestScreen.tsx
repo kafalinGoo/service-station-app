@@ -16,6 +16,11 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
       ? `${userSavedCars[0].brand} ${userSavedCars[0].model}`.trim()
       : "";
   });
+  const [carYear, setCarYear] = useState(() => {
+    return userSavedCars.length === 1 && userSavedCars[0].year
+      ? String(userSavedCars[0].year)
+      : "";
+  });
   const [city, setCity] = useState("");
   const [cityLoading, setCityLoading] = useState(false);
   const [cityEdit, setCityEdit] = useState(false);
@@ -119,7 +124,7 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           service: selectedService,
-          car: car.trim(),
+          car: carYear.trim() ? `${car.trim()} ${carYear.trim()}` : car.trim(),
           description,
           client_id: user.id,
           ...(city ? { city } : {}),
@@ -403,7 +408,7 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
               const active = car.trim().toLowerCase() === value.toLowerCase();
               return (
                 <button key={c.id} type="button"
-                  onMouseDown={() => setCar(value)}
+                  onMouseDown={() => { setCar(value); setCarYear(c.year ? String(c.year) : ""); }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${active ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-white/10 text-muted-foreground hover:border-neon-cyan/40 hover:text-white"}`}>
                   {label}
                 </button>
@@ -411,15 +416,25 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
             })}
           </div>
         )}
-        <input
-          className="input-neon w-full px-4 py-3 rounded-xl text-sm"
-          value={car}
-          onChange={(e) => setCar(e.target.value)}
-          onFocus={() => setCarFocused(true)}
-          onBlur={() => setTimeout(() => setCarFocused(false), 150)}
-          placeholder="Начните вводить марку и модель..."
-          autoComplete="off"
-        />
+        <div className="flex gap-2">
+          <input
+            className="input-neon flex-1 px-4 py-3 rounded-xl text-sm"
+            value={car}
+            onChange={(e) => setCar(e.target.value)}
+            onFocus={() => setCarFocused(true)}
+            onBlur={() => setTimeout(() => setCarFocused(false), 150)}
+            placeholder="Марка и модель..."
+            autoComplete="off"
+          />
+          <input
+            className="input-neon w-24 px-3 py-3 rounded-xl text-sm text-center"
+            value={carYear}
+            onChange={(e) => setCarYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
+            placeholder="Год"
+            maxLength={4}
+            inputMode="numeric"
+          />
+        </div>
         {carFocused && carSuggestions.length > 0 && (
           <div className="absolute z-50 left-0 right-0 mt-1 rounded-xl border border-neon-cyan/20 bg-[hsl(220,20%,8%)] shadow-xl overflow-hidden animate-scale-in">
             {carSuggestions.map((s, i) => {
