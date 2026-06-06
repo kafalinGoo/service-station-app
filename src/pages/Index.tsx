@@ -30,20 +30,21 @@ function SplashScreen({ onDone }: { onDone: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center"
-      style={{
-        transition: "opacity 0.4s ease",
-        opacity: fading ? 0 : 1,
-        backgroundImage: "url(https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/files/fd1dcaab-428a-41bb-a5cf-10c5ed29066c.jpg)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background"
+      style={{ transition: "opacity 0.4s ease", opacity: fading ? 0 : 1 }}
     >
-      <div className="absolute inset-0 bg-black/50" />
-      <div className="relative flex flex-col items-center gap-6">
+      <div className="flex flex-col items-center gap-6">
+        <div className="relative flex items-center justify-center">
+          <div className="absolute w-28 h-28 rounded-full border border-neon-cyan/20 animate-ping" style={{ animationDuration: "2s" }} />
+          <div className="absolute w-24 h-24 rounded-full border border-neon-cyan/30 animate-ping" style={{ animationDuration: "2s", animationDelay: "0.3s" }} />
+          <div className="w-20 h-20 rounded-2xl bg-neon-cyan/10 border border-neon-cyan/40 flex items-center justify-center glow-cyan">
+            <Icon name="Wrench" size={36} className="text-neon-cyan" />
+          </div>
+        </div>
+
         <div className="flex items-end gap-1">
-          <span className="text-4xl font-black font-mono-tech tracking-wider" style={{ animation: "neon-flicker 2.5s ease forwards" }}>AUTO</span>
-          <span className="text-4xl font-black text-white tracking-wider">TECH</span>
+          <span className="text-3xl font-black font-mono-tech tracking-wider" style={{ animation: "neon-flicker 2.5s ease forwards" }}>AUTO</span>
+          <span className="text-3xl font-black text-white tracking-wider">TECH</span>
         </div>
         <style>{`
           @keyframes neon-flicker {
@@ -57,7 +58,7 @@ function SplashScreen({ onDone }: { onDone: () => void }) {
           }
         `}</style>
 
-        <p className="text-xs font-mono-tech text-white/60 uppercase tracking-widest">Станции ТО</p>
+        <p className="text-xs font-mono-tech text-muted-foreground uppercase tracking-widest">Станции ТО</p>
 
         <div className="w-48 flex flex-col gap-1.5 mt-2">
           <div className="w-full h-0.5 rounded-full bg-neon-cyan/10 overflow-hidden">
