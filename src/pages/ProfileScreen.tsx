@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import {
   API, AuthUser, UserCar,
-  CAR_LIST, CAR_COLORS,
+  CAR_LIST,
   loadUserCars, saveUserCars,
 } from "./appTypes";
 
@@ -19,7 +19,7 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
   const [editId, setEditId] = useState<string | null>(null);
   const [formModel, setFormModel] = useState("");
   const [formPlate, setFormPlate] = useState("");
-  const [formColor, setFormColor] = useState("Белый");
+
   const [modelFocused, setModelFocused] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -124,16 +124,16 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
     ? CAR_LIST.filter(c => c.toLowerCase().includes(formModel.toLowerCase())).slice(0, 6)
     : [];
 
-  const openAdd = () => { setEditId(null); setFormModel(""); setFormPlate(""); setFormColor("Белый"); setFormVin(""); setFormVinError(""); setShowForm(true); };
-  const openEdit = (car: UserCar) => { setEditId(car.id); setFormModel(car.model); setFormPlate(car.plate); setFormColor(car.color); setFormVin(""); setFormVinError(""); setShowForm(true); };
+  const openAdd = () => { setEditId(null); setFormModel(""); setFormPlate(""); setFormVin(""); setFormVinError(""); setShowForm(true); };
+  const openEdit = (car: UserCar) => { setEditId(car.id); setFormModel(car.model); setFormPlate(car.plate ?? ""); setFormVin(""); setFormVinError(""); setShowForm(true); };
 
   const handleSave = () => {
     if (!formModel.trim()) return;
     let updated: UserCar[];
     if (editId) {
-      updated = cars.map(c => c.id === editId ? { ...c, model: formModel.trim(), plate: formPlate.trim(), color: formColor } : c);
+      updated = cars.map(c => c.id === editId ? { ...c, model: formModel.trim(), plate: formPlate.trim() } : c);
     } else {
-      updated = [...cars, { id: Date.now().toString(), model: formModel.trim(), plate: formPlate.trim(), color: formColor }];
+      updated = [...cars, { id: Date.now().toString(), model: formModel.trim(), plate: formPlate.trim() }];
     }
     setCars(updated); saveUserCars(updated); setShowForm(false);
   };
@@ -412,18 +412,6 @@ export function ProfileScreen({ user, onLogout }: { user: AuthUser; onLogout: ()
               <input className="input-neon w-full px-4 py-3 rounded-xl text-sm font-mono tracking-widest uppercase"
                 value={formPlate} onChange={(e) => setFormPlate(e.target.value.toUpperCase())}
                 placeholder="А 000 АА 000" maxLength={12} />
-            </div>
-
-            <div className="mb-4">
-              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1.5 block">Цвет</label>
-              <div className="flex flex-wrap gap-2">
-                {CAR_COLORS.map(c => (
-                  <button key={c} onClick={() => setFormColor(c)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${formColor === c ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-border text-muted-foreground hover:border-neon-cyan/30"}`}>
-                    {c}
-                  </button>
-                ))}
-              </div>
             </div>
 
             <div className="flex gap-3">
