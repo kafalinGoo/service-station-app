@@ -3,7 +3,7 @@ import Icon from "@/components/ui/icon";
 import {
   API, Screen, Bid, AuthUser,
   masters, services, CAR_LIST,
-  loadUserCars,
+  loadUserCars, addUserCar,
 } from "./appTypes";
 import { Stars } from "./appHelpers";
 
@@ -67,6 +67,9 @@ export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScree
     finally { setVinLoading(false); }
   };
 
+  const [showAddCarBanner, setShowAddCarBanner] = useState(false);
+  const [addingCar, setAddingCar] = useState(false);
+
   const [requestId, setRequestId] = useState<number | null>(null);
   const [notifiedCount, setNotifiedCount] = useState(0);
   const [bids, setBids] = useState<Bid[]>([]);
@@ -105,8 +108,8 @@ export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScree
     return () => clearInterval(interval);
   }, [requestId, polling, fetchBids]);
 
-  const handleSubmit = async () => {
-    if (!selectedService || !car.trim()) return;
+  const doSubmit = async () => {
+    setShowAddCarBanner(false);
     setLoading(true); setError("");
     try {
       const res = await fetch(API.createRequest, {
@@ -128,6 +131,34 @@ export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScree
       setPolling(true);
     } catch { setError("Не удалось отправить запрос. Проверьте соединение."); }
     finally { setLoading(false); }
+  };
+
+  const handleSubmit = () => {
+    if (!selectedService || !car.trim()) return;
+    const userCars = loadUserCars();
+    const carTrimmed = car.trim().toLowerCase();
+    const matched = userCars.some(c =>
+      `${c.brand} ${c.model}`.toLowerCase().includes(carTrimmed) ||
+      carTrimmed.includes(c.model.toLowerCase())
+    );
+    if (!matched) {
+      setShowAddCarBanner(true);
+    } else {
+      doSubmit();
+    }
+  };
+
+  const handleAddCarAndSubmit = async () => {
+    setAddingCar(true);
+    try {
+      const parts = car.trim().split(" ");
+      const brand = parts[0] || "Другое";
+      const model = parts.slice(1).join(" ") || car.trim();
+      const year = new Date().getFullYear();
+      await addUserCar(user.id, { brand, model, year });
+    } catch { /* игнорируем — авто добавить не критично */ }
+    finally { setAddingCar(false); }
+    doSubmit();
   };
 
   // ── Экран ожидания откликов ──────────────────────────────────────────────
@@ -433,6 +464,28 @@ export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScree
 
       {error && (
         <p className="text-xs text-destructive bg-destructive/10 border border-destructive/30 px-3 py-2 rounded-lg">{error}</p>
+      )}
+
+      {showAddCarBanner && (
+        <div className="rounded-xl border border-neon-cyan/30 bg-neon-cyan/5 p-4 flex flex-col gap-3 animate-fade-in">
+          <div className="flex items-start gap-3">
+            <Icon name="Car" size={20} className="text-neon-cyan mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-white">Добавить в «Мои автомобили»?</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Автомобиль <span className="text-neon-cyan font-medium">{car.trim()}</span> не найден в вашем гараже. Добавить его?</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={handleAddCarAndSubmit} disabled={addingCar}
+              className="flex-1 btn-neon py-2 rounded-lg text-sm font-semibold disabled:opacity-50">
+              {addingCar ? "Добавляю..." : "Добавить и отправить"}
+            </button>
+            <button onClick={doSubmit}
+              className="flex-1 py-2 rounded-lg text-sm font-medium border border-white/10 text-muted-foreground hover:text-white transition-colors">
+              Отправить без добавления
+            </button>
+          </div>
+        </div>
       )}
 
       <button disabled={!selectedService || !car.trim() || loading} onClick={handleSubmit}
