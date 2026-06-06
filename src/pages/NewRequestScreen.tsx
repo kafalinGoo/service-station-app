@@ -10,9 +10,11 @@ import { Stars } from "./appHelpers";
 export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScreen: (s: Screen) => void; targetMasterId: number | null; user: AuthUser }) {
   const [selectedService, setSelectedService] = useState("");
   const [description, setDescription] = useState("");
+  const userSavedCars = loadUserCars();
   const [car, setCar] = useState(() => {
-    const saved = loadUserCars();
-    return saved.length === 1 ? saved[0].model : "";
+    return userSavedCars.length === 1
+      ? `${userSavedCars[0].brand} ${userSavedCars[0].model}`.trim()
+      : "";
   });
   const [city, setCity] = useState("");
   const [cityLoading, setCityLoading] = useState(false);
@@ -393,6 +395,22 @@ export function NewRequestScreen({ setScreen, targetMasterId, user }: { setScree
 
       <div className="relative">
         <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 block">Автомобиль</label>
+        {userSavedCars.length > 1 && (
+          <div className="flex flex-wrap gap-2 mb-2">
+            {userSavedCars.map((c) => {
+              const label = `${c.brand} ${c.model} ${c.year}`.trim();
+              const value = `${c.brand} ${c.model}`.trim();
+              const active = car.trim().toLowerCase() === value.toLowerCase();
+              return (
+                <button key={c.id} type="button"
+                  onMouseDown={() => setCar(value)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${active ? "border-neon-cyan bg-neon-cyan/10 text-neon-cyan" : "border-white/10 text-muted-foreground hover:border-neon-cyan/40 hover:text-white"}`}>
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        )}
         <input
           className="input-neon w-full px-4 py-3 rounded-xl text-sm"
           value={car}
