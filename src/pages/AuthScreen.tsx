@@ -208,7 +208,7 @@ export default function AuthScreen({ onAuth }: Props) {
           </button>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground/50">AutoTech · Система управления ТО</p>
+        <p className="text-center text-xs text-muted-foreground/50">AutoTech · Персональный ассистент в мире авторемонта</p>
       </div>
     </div>
   );
