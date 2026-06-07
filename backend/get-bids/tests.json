@@ -25,11 +25,11 @@
       "expectedStatus": 200
     },
     {
-      "name": "Добавить авто",
+      "name": "Блокировка дубля авто",
       "method": "POST",
       "path": "/",
       "body": { "action": "add_car", "user_id": 1, "brand": "Toyota", "model": "Camry", "year": 2021 },
-      "expectedStatus": 200
+      "expectedStatus": 400
     }
   ]
 }

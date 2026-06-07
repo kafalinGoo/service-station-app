@@ -122,6 +122,14 @@ def handler(event: dict, context) -> dict:
                 cur.close(); conn.close()
                 return err("user_id, brand, model, year обязательны")
             cur.execute(
+                f"SELECT id FROM {SCHEMA}.user_cars WHERE user_id = %s AND brand = %s AND model = %s AND year = %s",
+                (int(user_id), brand, model, int(year)),
+            )
+            existing = cur.fetchone()
+            if existing:
+                cur.close(); conn.close()
+                return err("Такой автомобиль уже добавлен")
+            cur.execute(
                 f"""
                 INSERT INTO {SCHEMA}.user_cars (user_id, brand, model, year, vin)
                 VALUES (%s, %s, %s, %s, %s)
