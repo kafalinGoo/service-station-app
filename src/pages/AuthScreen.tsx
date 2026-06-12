@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { API, AuthUser, storeUser } from "./appTypes";
+import { PrivacyScreen } from "./PrivacyScreen";
 
 interface Props {
   onAuth: (user: AuthUser) => void;
@@ -25,6 +26,8 @@ export default function AuthScreen({ onAuth }: Props) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [agreed, setAgreed] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   const formatPhone = (val: string) => {
     const digits = val.replace(/\D/g, "");
@@ -199,17 +202,64 @@ export default function AuthScreen({ onAuth }: Props) {
           )}
 
           {/* Кнопка */}
-          <button onClick={handleSubmit} disabled={loading}
+          <button onClick={handleSubmit} disabled={loading || (mode === "register" && !agreed)}
             className="btn-neon py-3.5 rounded-xl font-bold text-sm disabled:opacity-40 flex items-center justify-center gap-2">
             {loading
               ? <><div className="w-4 h-4 rounded-full border-2 border-background border-t-transparent animate-spin" />Подождите...</>
               : <><Icon name={mode === "login" ? "LogIn" : "UserPlus"} size={16} />{mode === "login" ? "Войти" : "Создать аккаунт"}</>
             }
           </button>
+
+          {/* Согласие (только при регистрации) */}
+          {mode === "register" && (
+            <label className="flex items-start gap-3 cursor-pointer select-none">
+              <button
+                type="button"
+                onClick={() => setAgreed(!agreed)}
+                className={`mt-0.5 w-5 h-5 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all ${agreed ? "bg-neon-cyan border-neon-cyan" : "border-border bg-transparent hover:border-neon-cyan/50"}`}
+              >
+                {agreed && <Icon name="Check" size={12} className="text-background" />}
+              </button>
+              <span className="text-xs text-muted-foreground leading-relaxed">
+                Я соглашаюсь с{" "}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setShowPrivacy(true); }}
+                  className="text-neon-cyan underline underline-offset-2 hover:text-neon-cyan/70 transition-colors"
+                >
+                  политикой конфиденциальности
+                </button>{" "}
+                и даю согласие на обработку персональных данных
+              </span>
+            </label>
+          )}
         </div>
 
         <p className="text-center text-xs text-muted-foreground/50">AutoTech · Персональный ассистент в мире авторемонта</p>
       </div>
+
+      {/* Модал политики конфиденциальности */}
+      {showPrivacy && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: "hsla(220,20%,3%,0.85)", backdropFilter: "blur(8px)" }}>
+          <div className="w-full max-w-[430px] bg-[hsl(220,20%,7%)] border border-neon-cyan/20 rounded-t-3xl flex flex-col" style={{ maxHeight: "90vh" }}>
+            <div className="flex justify-between items-center px-5 pt-5 pb-3 border-b border-border flex-shrink-0">
+              <h3 className="text-base font-bold text-white">Политика конфиденциальности</h3>
+              <button onClick={() => setShowPrivacy(false)} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+                <Icon name="X" size={16} className="text-muted-foreground" />
+              </button>
+            </div>
+            <div className="overflow-y-auto px-5 py-4">
+              <PrivacyScreen onBack={() => setShowPrivacy(false)} hideBackButton />
+            </div>
+            <div className="px-5 py-4 border-t border-border flex-shrink-0">
+              <button onClick={() => { setAgreed(true); setShowPrivacy(false); }}
+                className="btn-neon w-full py-3 rounded-xl font-bold text-sm">
+                Принимаю и соглашаюсь
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

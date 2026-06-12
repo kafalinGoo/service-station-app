@@ -1,6 +1,6 @@
 import Icon from "@/components/ui/icon";
 
-export function PrivacyScreen({ onBack }: { onBack: () => void }) {
+export function PrivacyScreen({ onBack, hideBackButton }: { onBack: () => void; hideBackButton?: boolean }) {
   const sections = [
     {
       title: "1. Общие положения",
@@ -37,19 +37,21 @@ export function PrivacyScreen({ onBack }: { onBack: () => void }) {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen pb-8">
-      <div className="flex items-center gap-3 mb-6">
-        <button
-          onClick={onBack}
-          className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0"
-        >
-          <Icon name="ArrowLeft" size={18} className="text-muted-foreground" />
-        </button>
-        <div>
-          <h2 className="text-base font-bold text-white">Политика конфиденциальности</h2>
-          <p className="text-xs text-muted-foreground">Редакция от 12 июня 2026 г.</p>
+    <div className="flex flex-col pb-8">
+      {!hideBackButton && (
+        <div className="flex items-center gap-3 mb-6">
+          <button
+            onClick={onBack}
+            className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0"
+          >
+            <Icon name="ArrowLeft" size={18} className="text-muted-foreground" />
+          </button>
+          <div>
+            <h2 className="text-base font-bold text-white">Политика конфиденциальности</h2>
+            <p className="text-xs text-muted-foreground">Редакция от 12 июня 2026 г.</p>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex flex-col gap-4">
         {sections.map((s) => (
