@@ -127,7 +127,10 @@ export function AnalyticsScreen({ user }: { user: AuthUser }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user.master_id) return;
+    if (!user.master_id) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     fetch(`${API.analytics}?master_id=${user.master_id}&period=${PERIOD_API[period]}`)
       .then(r => r.json())
@@ -138,6 +141,16 @@ export function AnalyticsScreen({ user }: { user: AuthUser }) {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [period, user.master_id]);
+
+  if (!loading && !user.master_id) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+        <Icon name="BarChart2" size={48} className="text-muted-foreground/30" />
+        <p className="text-sm font-semibold text-white">Аналитика недоступна</p>
+        <p className="text-xs text-muted-foreground">Раздел доступен только для мастеров</p>
+      </div>
+    );
+  }
 
   const bars = data?.bars ?? [];
   const barLabels = data?.bar_labels ?? [];
