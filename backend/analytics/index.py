@@ -153,24 +153,25 @@ def handler(event: dict, context) -> dict:
     elif period == "month":
         # начало текущего месяца (1-е число)
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        # получаем все дни месяца с выручкой
         cur.execute(f"""
-            SELECT DATE_TRUNC('week', b.created_at + interval '1 day') - interval '1 day' AS w,
-                   COALESCE(SUM(b.price), 0)
+            SELECT DATE(b.created_at) AS d, COALESCE(SUM(b.price), 0)
             FROM {SCHEMA}.bids b
             WHERE b.master_id = %s AND b.status = 'accepted'
               AND b.created_at >= %s
-            GROUP BY w ORDER BY w
+            GROUP BY d ORDER BY d
         """, (int(master_id), month_start))
         rows = cur.fetchall()
-        row_map = {r[0].date(): int(r[1]) for r in rows}
-        # заполняем все недели месяца (Пн–Вс) до сегодня
+        day_map = {r[0]: int(r[1]) for r in rows}
+        # группируем по неделям (Пн–Вс)
         bars = []
         labels = []
-        # первый понедельник месяца (или сам 1-й если пн)
-        week_start = month_start - timedelta(days=month_start.weekday())
+        week_start = (month_start - timedelta(days=month_start.weekday())).date()
+        today = now.date()
         week_num = 1
-        while week_start.replace(tzinfo=timezone.utc) <= now:
-            bars.append(row_map.get(week_start.date(), 0))
+        while week_start <= today:
+            week_rev = sum(day_map.get(week_start + timedelta(days=d), 0) for d in range(7))
+            bars.append(week_rev)
             labels.append(f"Нед {week_num}")
             week_start += timedelta(days=7)
             week_num += 1
