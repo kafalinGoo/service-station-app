@@ -38,8 +38,8 @@ def period_bounds(period: str):
         prev_year = now.year if q_month > 3 else now.year - 1
         prev = now.replace(year=prev_year, month=prev_q_month, day=1, hour=0, minute=0, second=0, microsecond=0)
     elif period == "year":
-        start = now - timedelta(days=365)
-        prev = now - timedelta(days=730)
+        start = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        prev = start.replace(year=now.year - 1)
     else:  # month
         start = now - timedelta(days=30)
         prev = now - timedelta(days=60)
@@ -209,17 +209,22 @@ def handler(event: dict, context) -> dict:
 
     else:  # year
         cur.execute(f"""
-            SELECT TO_CHAR(DATE_TRUNC('month', b.created_at), 'Mon') AS m,
-                   DATE_TRUNC('month', b.created_at) AS md,
-                   COALESCE(SUM(b.price), 0)
+            SELECT DATE_TRUNC('month', b.created_at) AS md, COALESCE(SUM(b.price), 0)
             FROM {SCHEMA}.bids b
             WHERE b.master_id = %s AND b.status = 'accepted'
               AND b.created_at >= %s
-            GROUP BY md, m ORDER BY md
+            GROUP BY md ORDER BY md
         """, (int(master_id), start))
         rows = cur.fetchall()
-        bars = [int(r[2]) for r in rows] or [0]
-        labels = [r[0] for r in rows] or ["—"]
+        row_map = {r[0].date(): int(r[1]) for r in rows}
+        ru_months = ["", "Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"]
+        from datetime import date as date_cls
+        bars = []
+        labels = []
+        for m in range(1, now.month + 1):
+            key = date_cls(now.year, m, 1)
+            bars.append(row_map.get(key, 0))
+            labels.append(ru_months[m])
 
     cur.close()
     conn.close()
