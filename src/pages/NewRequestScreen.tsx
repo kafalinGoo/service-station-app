@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   API, Screen, Bid, AuthUser,
   loadUserCars, addUserCar,
@@ -28,6 +28,8 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
   const [cityEdit, setCityEdit] = useState(false);
   const [cityInput, setCityInput] = useState("");
   const [photos, setPhotos] = useState<{ url: string; name: string; file?: File }[]>([]);
+  const photosRef = useRef(photos);
+  useEffect(() => { photosRef.current = photos; }, [photos]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -102,8 +104,9 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
 
   const uploadPhotos = async (): Promise<string[]> => {
     const urls: string[] = [];
-    for (const p of photos) {
-      if (!p.file) { console.warn("[upload] no file in photo entry", p); continue; }
+    const currentPhotos = photosRef.current;
+    for (const p of currentPhotos) {
+      if (!p.file) continue;
       try {
         const b64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
@@ -118,21 +121,17 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
         });
         const raw = await res.json();
         const d = typeof raw === "string" ? JSON.parse(raw) : raw;
-        console.log("[upload] result", d);
         if (d.url) urls.push(d.url);
-      } catch (e) { console.error("[upload] error", e); }
+      } catch { /* пропускаем неудавшееся фото */ }
     }
-    console.log("[upload] final urls", urls);
     return urls;
   };
 
   const doSubmit = async () => {
     setShowAddCarBanner(false);
     setLoading(true); setError("");
-    console.warn("[doSubmit] photos count:", photos.length);
     try {
       const photoUrls = await uploadPhotos();
-      console.warn("[doSubmit] photoUrls:", photoUrls);
       const res = await fetch(API.createRequest, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
