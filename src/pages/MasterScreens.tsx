@@ -14,6 +14,7 @@ interface IncomingRequest {
   created_at: string;
   target_master_id: number | null;
   already_bid: boolean;
+  photos: string[];
 }
 
 interface MyBid {
@@ -258,6 +259,16 @@ export function MasterRequestsScreen({ user, onOpenChat }: {
                     <p className="text-xs text-muted-foreground">{req.car}</p>
                     {req.description && (
                       <p className="text-xs text-foreground/70 mt-1.5 leading-relaxed line-clamp-2">{req.description}</p>
+                    )}
+                    {req.photos && req.photos.length > 0 && (
+                      <div className="flex gap-1.5 mt-2 flex-wrap">
+                        {req.photos.map((url, idx) => (
+                          <a key={idx} href={url} target="_blank" rel="noopener noreferrer"
+                            className="w-14 h-14 rounded-lg overflow-hidden border border-neon-cyan/20 flex-shrink-0 block">
+                            <img src={url} alt="фото" className="w-full h-full object-cover" />
+                          </a>
+                        ))}
+                      </div>
                     )}
                     <div className="flex items-center justify-between mt-3">
                       <span className="text-xs text-muted-foreground/60 font-mono-tech">{timeAgo(req.created_at)}</span>

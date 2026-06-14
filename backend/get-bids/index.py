@@ -256,7 +256,8 @@ def handler(event: dict, context) -> dict:
                    EXISTS(
                      SELECT 1 FROM {SCHEMA}.bids b2
                      WHERE b2.request_id = r.id AND b2.master_id = %s
-                   ) AS already_bid
+                   ) AS already_bid,
+                   COALESCE(r.photos, '{{}}') AS photos
             FROM {SCHEMA}.requests r
             JOIN {SCHEMA}.masters m ON m.id = %s
             WHERE r.status = 'open'
@@ -284,7 +285,7 @@ def handler(event: dict, context) -> dict:
                 "id": row[0], "service": row[1], "category": row[2],
                 "car": row[3], "description": row[4], "status": row[5],
                 "created_at": str(row[6]), "target_master_id": row[7],
-                "already_bid": row[8],
+                "already_bid": row[8], "photos": list(row[9]) if row[9] else [],
             })
         cur.close(); conn.close()
         return ok({"requests": requests_list, "count": len(requests_list)})

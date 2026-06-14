@@ -39,6 +39,7 @@ def handler(event: dict, context) -> dict:
     client_id = body.get("client_id", 1)
     master_id = body.get("master_id")  # если задан — запрос только этому мастеру
     city = (body.get("city") or "").strip() or None
+    photos = body.get("photos") or []  # список CDN URL загруженных фото
 
     if not service or not car:
         return {
@@ -55,11 +56,11 @@ def handler(event: dict, context) -> dict:
     cur.execute(
         """
         INSERT INTO t_p3896276_service_station_app.requests
-            (client_id, service, category, car, description, status, target_master_id, city)
-        VALUES (%s, %s, %s, %s, %s, 'open', %s, %s)
+            (client_id, service, category, car, description, status, target_master_id, city, photos)
+        VALUES (%s, %s, %s, %s, %s, 'open', %s, %s, %s)
         RETURNING id, created_at
         """,
-        (client_id, service, category, car, description, master_id or None, city),
+        (client_id, service, category, car, description, master_id or None, city, photos),
     )
     row = cur.fetchone()
     request_id, created_at = row[0], row[1]

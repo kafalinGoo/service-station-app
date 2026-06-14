@@ -27,7 +27,7 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
   const [cityLoading, setCityLoading] = useState(false);
   const [cityEdit, setCityEdit] = useState(false);
   const [cityInput, setCityInput] = useState("");
-  const [photos, setPhotos] = useState<{ url: string; name: string }[]>([]);
+  const [photos, setPhotos] = useState<{ url: string; name: string; file?: File }[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -72,7 +72,7 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
     const files = Array.from(e.target.files || []);
     files.forEach((file) => {
       const url = URL.createObjectURL(file);
-      setPhotos((prev) => [...prev, { url, name: file.name }]);
+      setPhotos((prev) => [...prev, { url, name: file.name, file }]);
     });
     e.target.value = "";
   };
@@ -100,10 +100,35 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
     return () => clearInterval(interval);
   }, [requestId, polling, fetchBids]);
 
+  const uploadPhotos = async (): Promise<string[]> => {
+    const urls: string[] = [];
+    for (const p of photos) {
+      if (!p.file) continue;
+      try {
+        const b64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve((reader.result as string).split(",")[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(p.file!);
+        });
+        const res = await fetch(API.uploadPhoto, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename: p.name, content_type: p.file.type || "image/jpeg", data: b64 }),
+        });
+        const raw = await res.json();
+        const d = typeof raw === "string" ? JSON.parse(raw) : raw;
+        if (d.url) urls.push(d.url);
+      } catch { /* пропускаем неудавшееся фото */ }
+    }
+    return urls;
+  };
+
   const doSubmit = async () => {
     setShowAddCarBanner(false);
     setLoading(true); setError("");
     try {
+      const photoUrls = await uploadPhotos();
       const res = await fetch(API.createRequest, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -114,6 +139,7 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
           client_id: user.id,
           ...(city ? { city } : {}),
           ...(targetMasterId ? { master_id: targetMasterId } : {}),
+          ...(photoUrls.length ? { photos: photoUrls } : {}),
         }),
       });
       const raw = await res.json();
