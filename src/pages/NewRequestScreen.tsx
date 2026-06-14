@@ -83,14 +83,18 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
         if (d.url) {
           setPhotos((prev) => prev.map((p) => p.url === previewUrl ? { ...p, cdnUrl: d.url } : p));
         }
-      } catch { /* оставляем без cdnUrl */ }
+      } catch (err) {
+        console.error("[photo] upload failed", err);
+      }
     };
+    reader.onerror = (err) => console.error("[photo] reader error", err);
     reader.readAsDataURL(file);
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     e.target.value = "";
+    console.warn("[photo] files selected:", files.length, files.map(f => f.name));
     if (!files.length) return;
     for (const file of files) {
       const previewUrl = URL.createObjectURL(file);
