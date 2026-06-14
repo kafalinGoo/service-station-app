@@ -7,7 +7,7 @@ interface Props {
   description: string;
   setDescription: (v: string) => void;
   photos: { url: string; name: string; cdnUrl?: string }[];
-  photosUploading?: boolean;
+
   onPhotoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemovePhoto: (idx: number) => void;
   error: string;
@@ -23,7 +23,7 @@ interface Props {
 export function RequestFormBody({
   selectedService, setSelectedService,
   description, setDescription,
-  photos, photosUploading, onPhotoUpload, onRemovePhoto,
+  photos, onPhotoUpload, onRemovePhoto,
   error, loading,
   showAddCarBanner, addingCar, car,
   onSubmit, onAddCarAndSubmit, onSkipAddCar,

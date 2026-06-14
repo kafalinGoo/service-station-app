@@ -28,7 +28,6 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
   const [cityEdit, setCityEdit] = useState(false);
   const [cityInput, setCityInput] = useState("");
   const [photos, setPhotos] = useState<{ url: string; name: string; cdnUrl?: string }[]>([]);
-  const [photosUploading, setPhotosUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -69,22 +68,11 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
   const [polling, setPolling] = useState(false);
   const [requestTargetMasterId, setRequestTargetMasterId] = useState<number | null>(null);
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    e.target.value = "";
-    if (!files.length) return;
-    setPhotosUploading(true);
-    for (const file of files) {
-      const previewUrl = URL.createObjectURL(file);
-      const idx = Date.now() + Math.random();
-      setPhotos((prev) => [...prev, { url: previewUrl, name: file.name }]);
+  const uploadFileToS3 = (file: File, previewUrl: string) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
       try {
-        const b64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve((reader.result as string).split(",")[1]);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+        const b64 = (reader.result as string).split(",")[1];
         const res = await fetch(API.uploadPhoto, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -96,8 +84,19 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
           setPhotos((prev) => prev.map((p) => p.url === previewUrl ? { ...p, cdnUrl: d.url } : p));
         }
       } catch { /* оставляем без cdnUrl */ }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (!files.length) return;
+    for (const file of files) {
+      const previewUrl = URL.createObjectURL(file);
+      setPhotos((prev) => [...prev, { url: previewUrl, name: file.name }]);
+      uploadFileToS3(file, previewUrl);
     }
-    setPhotosUploading(false);
   };
 
   const removePhoto = (idx: number) => {
@@ -233,7 +232,6 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
         description={description}
         setDescription={setDescription}
         photos={photos}
-        photosUploading={photosUploading}
         onPhotoUpload={handlePhotoUpload}
         onRemovePhoto={removePhoto}
         error={error}
