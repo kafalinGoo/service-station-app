@@ -6,7 +6,7 @@ interface Props {
   setSelectedService: (v: string) => void;
   description: string;
   setDescription: (v: string) => void;
-  photos: { url: string; name: string; file?: File }[];
+  photos: { url: string; name: string }[];
   onPhotoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemovePhoto: (idx: number) => void;
   error: string;

@@ -27,9 +27,8 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
   const [cityLoading, setCityLoading] = useState(false);
   const [cityEdit, setCityEdit] = useState(false);
   const [cityInput, setCityInput] = useState("");
-  const [photos, setPhotos] = useState<{ url: string; name: string; file?: File }[]>([]);
-  const photosRef = useRef(photos);
-  useEffect(() => { photosRef.current = photos; }, [photos]);
+  const [photos, setPhotos] = useState<{ url: string; name: string }[]>([]);
+  const photoFilesRef = useRef<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -74,13 +73,15 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
     const files = Array.from(e.target.files || []);
     files.forEach((file) => {
       const url = URL.createObjectURL(file);
-      setPhotos((prev) => [...prev, { url, name: file.name, file }]);
+      setPhotos((prev) => [...prev, { url, name: file.name }]);
+      photoFilesRef.current = [...photoFilesRef.current, file];
     });
     e.target.value = "";
   };
 
   const removePhoto = (idx: number) => {
     setPhotos((prev) => prev.filter((_, i) => i !== idx));
+    photoFilesRef.current = photoFilesRef.current.filter((_, i) => i !== idx);
   };
 
   const fetchBids = useCallback(async (reqId: number) => {
@@ -104,20 +105,18 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
 
   const uploadPhotos = async (): Promise<string[]> => {
     const urls: string[] = [];
-    const currentPhotos = photosRef.current;
-    for (const p of currentPhotos) {
-      if (!p.file) continue;
+    for (const file of photoFilesRef.current) {
       try {
         const b64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => resolve((reader.result as string).split(",")[1]);
           reader.onerror = reject;
-          reader.readAsDataURL(p.file!);
+          reader.readAsDataURL(file);
         });
         const res = await fetch(API.uploadPhoto, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ filename: p.name, content_type: p.file.type || "image/jpeg", data: b64 }),
+          body: JSON.stringify({ filename: file.name, content_type: file.type || "image/jpeg", data: b64 }),
         });
         const raw = await res.json();
         const d = typeof raw === "string" ? JSON.parse(raw) : raw;
@@ -147,6 +146,7 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
       });
       const raw = await res.json();
       const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      photoFilesRef.current = [];
       setRequestId(data.request_id);
       setNotifiedCount(data.notified_masters);
       setPolling(true);
