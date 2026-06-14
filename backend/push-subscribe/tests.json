@@ -1,0 +1,17 @@
+{
+  "tests": [
+    {
+      "name": "GET vapid public key",
+      "method": "GET",
+      "path": "/?vapid_public_key=1",
+      "expectedStatus": 200
+    },
+    {
+      "name": "POST без action — ошибка",
+      "method": "POST",
+      "path": "/",
+      "body": {},
+      "expectedStatus": 400
+    }
+  ]
+}

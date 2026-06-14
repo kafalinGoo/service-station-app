@@ -6,6 +6,7 @@
 import json
 import os
 import psycopg2
+import urllib.request
 
 CORS = {
     "Access-Control-Allow-Origin": "*",
@@ -131,6 +132,28 @@ def handler(event: dict, context) -> dict:
     conn.commit()
     cur.close()
     conn.close()
+
+    # Отправляем Web Push уведомления мастерам
+    master_ids = [m["id"] for m in masters]
+    if master_ids:
+        try:
+            send_push_url = os.environ.get("SEND_PUSH_URL", "")
+            if send_push_url:
+                push_payload = json.dumps({
+                    "master_ids": master_ids,
+                    "title": "Новая заявка",
+                    "body": f"{service} · {car}",
+                    "data": {"request_id": request_id},
+                }).encode()
+                req = urllib.request.Request(
+                    send_push_url,
+                    data=push_payload,
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
+                )
+                urllib.request.urlopen(req, timeout=5)
+        except Exception:
+            pass
 
     return {
         "statusCode": 200,

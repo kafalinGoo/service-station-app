@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Icon from "@/components/ui/icon";
 import { API, AuthUser } from "./appTypes";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -154,6 +155,7 @@ export function MasterRequestsScreen({ user, onOpenChat }: {
   onOpenChat: (requestId: number, masterName: string, masterAvatar: string) => void;
 }) {
   const masterId = user.master_id ?? user.id;
+  usePushNotifications(masterId);
   const [tab, setTab] = useState<"incoming" | "mybids">("incoming");
   const [incoming, setIncoming] = useState<IncomingRequest[]>([]);
   const [mybids, setMybids] = useState<MyBid[]>([]);

@@ -10,6 +10,7 @@ export const API = {
   analytics:        "https://functions.poehali.dev/57a860cb-cb58-4669-8426-eb6a99545775",
   chat:             "https://functions.poehali.dev/3e3464be-bba4-4476-a834-de7d66d20005",
   uploadPhoto:      "https://functions.poehali.dev/a425d163-4d44-4a96-8d8b-e361857bc3a7",
+  pushSubscribe:    "https://functions.poehali.dev/ea9857bb-2ecf-4f2b-b2fb-b8afdbc866ac",
 };
 
 export async function fetchUserCars(userId: number): Promise<UserCar[]> {

@@ -1,0 +1,11 @@
+{
+  "tests": [
+    {
+      "name": "POST без master_ids — ошибка",
+      "method": "POST",
+      "path": "/",
+      "body": {},
+      "expectedStatus": 400
+    }
+  ]
+}
