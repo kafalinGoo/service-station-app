@@ -1,0 +1,23 @@
+{
+  "tests": [
+    {
+      "name": "GET сообщения без request_id — ошибка",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 400
+    },
+    {
+      "name": "GET сообщения по заявке",
+      "method": "GET",
+      "path": "/?request_id=1&since_id=0",
+      "expectedStatus": 200
+    },
+    {
+      "name": "POST сообщение",
+      "method": "POST",
+      "path": "/",
+      "body": {"request_id": 1, "sender_id": 1, "sender_role": "client", "text": "Тест чата"},
+      "expectedStatus": 200
+    }
+  ]
+}

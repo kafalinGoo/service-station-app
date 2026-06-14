@@ -8,6 +8,7 @@ export const API = {
   getNotifications: "https://functions.poehali.dev/1fe02ff1-664e-4fd7-888a-e1f1f3d3df07",
   auth:             "https://functions.poehali.dev/50d346e2-4e25-47c2-bdc1-aa10367a98ff",
   analytics:        "https://functions.poehali.dev/57a860cb-cb58-4669-8426-eb6a99545775",
+  chat:             "https://functions.poehali.dev/3e3464be-bba4-4476-a834-de7d66d20005",
 };
 
 export async function fetchUserCars(userId: number): Promise<UserCar[]> {

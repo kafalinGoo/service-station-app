@@ -45,9 +45,10 @@ export function timeAgo(iso: string) {
 }
 
 function RequestDetailModal({
-  requestId, user, onClose,
+  requestId, user, onClose, onOpenChat,
 }: {
   requestId: number; user: AuthUser; onClose: () => void;
+  onOpenChat: (masterId: number, masterName: string, masterAvatar: string) => void;
 }) {
   const [request, setRequest] = useState<ApiRequest | null>(null);
   const [bids, setBids] = useState<ApiBid[]>([]);
@@ -267,7 +268,14 @@ function RequestDetailModal({
                               </button>
                             )}
                             {isAccepted && (
-                              <span className="text-xs text-neon-cyan font-semibold">Выбран</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-neon-cyan font-semibold">Выбран</span>
+                                <button
+                                  onClick={() => { onOpenChat(bid.master.id, bid.master.name, bid.master.avatar); onClose(); }}
+                                  className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-neon-cyan/10 border border-neon-cyan/30 text-neon-cyan font-semibold hover:bg-neon-cyan/20 transition-colors">
+                                  <Icon name="MessageCircle" size={11} />Чат
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -284,7 +292,11 @@ function RequestDetailModal({
   );
 }
 
-export function HistoryScreen({ setScreen, user }: { setScreen: (s: Screen) => void; user: AuthUser }) {
+export function HistoryScreen({ setScreen, user, onOpenChat }: {
+  setScreen: (s: Screen) => void;
+  user: AuthUser;
+  onOpenChat: (requestId: number, masterId: number, masterName: string, masterAvatar: string) => void;
+}) {
   const [filter, setFilter] = useState<"all" | "open" | "accepted" | "closed">("all");
   const [requests, setRequests] = useState<ApiRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -377,6 +389,9 @@ export function HistoryScreen({ setScreen, user }: { setScreen: (s: Screen) => v
           requestId={selectedId}
           user={user}
           onClose={() => setSelectedId(null)}
+          onOpenChat={(masterId, masterName, masterAvatar) => {
+            onOpenChat(selectedId, masterId, masterName, masterAvatar);
+          }}
         />
       )}
     </div>

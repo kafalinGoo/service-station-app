@@ -87,6 +87,7 @@ export default function Index() {
   const [targetMasterId, setTargetMasterId] = useState<number | null>(null);
   const [preselectedService, setPreselectedService] = useState<string>("");
   const [userCity, setUserCity] = useState("");
+  const [chatContext, setChatContext] = useState<{ requestId: number; masterName: string; masterAvatar: string } | null>(null);
   const [unreadCount, setUnreadCount] = useState(notifications.filter(n => !n.read).length);
 
   useEffect(() => {
@@ -206,8 +207,8 @@ export default function Index() {
             <>
               {screen === "home"            && <HomeScreen setScreen={setScreen} goToNewRequest={goToNewRequest} onShowAllMasters={() => setScreen("all-masters")} />}
               {screen === "new-request"     && <NewRequestScreen setScreen={setScreen} targetMasterId={targetMasterId} user={user} preselectedService={preselectedService} />}
-              {screen === "history"         && <HistoryScreen setScreen={setScreen} user={user} />}
-              {screen === "chat"            && <ChatScreen />}
+              {screen === "history"         && <HistoryScreen setScreen={setScreen} user={user} onOpenChat={(requestId, _masterId, masterName, masterAvatar) => { setChatContext({ requestId, masterName, masterAvatar }); setScreen("chat"); }} />}
+              {screen === "chat"            && <ChatScreen user={user} requestId={chatContext?.requestId ?? null} masterName={chatContext?.masterName ?? ""} masterAvatar={chatContext?.masterAvatar ?? ""} />}
               {screen === "reviews"         && <ReviewsScreen />}
               {screen === "notifications"   && <NotificationsScreen user={user} />}
               {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} setScreen={setScreen} />}
