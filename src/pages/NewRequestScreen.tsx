@@ -103,7 +103,7 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
   const uploadPhotos = async (): Promise<string[]> => {
     const urls: string[] = [];
     for (const p of photos) {
-      if (!p.file) continue;
+      if (!p.file) { console.warn("[upload] no file in photo entry", p); continue; }
       try {
         const b64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
@@ -118,9 +118,11 @@ export function NewRequestScreen({ setScreen, targetMasterId, user, preselectedS
         });
         const raw = await res.json();
         const d = typeof raw === "string" ? JSON.parse(raw) : raw;
+        console.log("[upload] result", d);
         if (d.url) urls.push(d.url);
-      } catch { /* пропускаем неудавшееся фото */ }
+      } catch (e) { console.error("[upload] error", e); }
     }
+    console.log("[upload] final urls", urls);
     return urls;
   };
 
