@@ -179,7 +179,7 @@ export default function Index() {
                 )}
               </div>
             ) : (
-              <h1 className="text-base font-bold text-white">{screenTitles[screen]}</h1>
+              <h1 className="text-base font-bold text-white">{screen === "chat" ? (isMaster ? "Чат с клиентом" : "Чат с мастером") : screenTitles[screen]}</h1>
             )}
           </div>
           <div className="flex items-center gap-2">
