@@ -7,7 +7,7 @@ import {
   getStoredUser, clearUser,
 } from "./appTypes";
 
-import { HomeScreen, HistoryScreen, ChatScreen, ReviewsScreen, AnalyticsScreen } from "./HomeScreens";
+import { HomeScreen, HistoryScreen, ChatScreen, ChatListScreen, ReviewsScreen, AnalyticsScreen } from "./HomeScreens";
 import { NewRequestScreen, NotificationsScreen, ProfileScreen } from "./RequestScreens";
 import { MasterRequestsScreen } from "./MasterScreens";
 import AuthScreen from "./AuthScreen";
@@ -88,6 +88,7 @@ export default function Index() {
   const [preselectedService, setPreselectedService] = useState<string>("");
   const [userCity, setUserCity] = useState("");
   const [chatContext, setChatContext] = useState<{ requestId: number; masterName: string; masterAvatar: string } | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(notifications.filter(n => !n.read).length);
 
   useEffect(() => {
@@ -126,6 +127,11 @@ export default function Index() {
     setScreen("new-request");
   };
 
+  const openChatWithRequest = (requestId: number, masterName: string, masterAvatar: string) => {
+    setChatContext({ requestId, masterName, masterAvatar });
+    setChatOpen(true);
+  };
+
   const handleLogout = () => {
     clearUser();
     setUser(null);
@@ -157,7 +163,7 @@ export default function Index() {
         <header className="sticky top-0 z-20 px-4 py-3 flex items-center justify-between" style={{ background: "hsla(220,20%,5%,0.92)", backdropFilter: "blur(20px)", borderBottom: "1px solid hsla(185,100%,50%,0.1)" }}>
           <div className="flex items-center gap-3">
             {screen !== homeScreen && (
-              <button onClick={() => setScreen(homeScreen)} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
+              <button onClick={() => { if (screen === "chat" && chatOpen) { setChatOpen(false); } else { setScreen(homeScreen); } }} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center">
                 <Icon name="ChevronLeft" size={18} className="text-neon-cyan" />
               </button>
             )}
@@ -198,8 +204,9 @@ export default function Index() {
             <AllMastersScreen city={userCity} onBack={() => setScreen("home")} goToNewRequest={goToNewRequest} />
           ) : isMaster ? (
             <>
-              {screen === "master-requests" && <MasterRequestsScreen user={user} onOpenChat={(requestId, masterName, masterAvatar) => { setChatContext({ requestId, masterName, masterAvatar }); setScreen("chat"); }} />}
-              {screen === "chat"            && <ChatScreen user={user} requestId={chatContext?.requestId ?? null} masterName={chatContext?.masterName ?? ""} masterAvatar={chatContext?.masterAvatar ?? ""} />}
+              {screen === "master-requests" && <MasterRequestsScreen user={user} onOpenChat={(requestId, masterName, masterAvatar) => { setChatContext({ requestId, masterName, masterAvatar }); setChatOpen(true); setScreen("chat"); }} />}
+              {screen === "chat" && !chatOpen && <ChatListScreen user={user} onOpenChat={openChatWithRequest} />}
+              {screen === "chat" && chatOpen  && <ChatScreen user={user} requestId={chatContext?.requestId ?? null} masterName={chatContext?.masterName ?? ""} masterAvatar={chatContext?.masterAvatar ?? ""} onBack={() => setChatOpen(false)} />}
               {screen === "analytics"       && <AnalyticsScreen user={user} />}
               {screen === "notifications"   && <NotificationsScreen user={user} onUnreadChange={setUnreadCount} />}
               {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} setScreen={setScreen} />}
@@ -208,8 +215,9 @@ export default function Index() {
             <>
               {screen === "home"            && <HomeScreen setScreen={setScreen} goToNewRequest={goToNewRequest} onShowAllMasters={() => setScreen("all-masters")} />}
               {screen === "new-request"     && <NewRequestScreen setScreen={setScreen} targetMasterId={targetMasterId} user={user} preselectedService={preselectedService} />}
-              {screen === "history"         && <HistoryScreen setScreen={setScreen} user={user} onOpenChat={(requestId, _masterId, masterName, masterAvatar) => { setChatContext({ requestId, masterName, masterAvatar }); setScreen("chat"); }} />}
-              {screen === "chat"            && <ChatScreen user={user} requestId={chatContext?.requestId ?? null} masterName={chatContext?.masterName ?? ""} masterAvatar={chatContext?.masterAvatar ?? ""} />}
+              {screen === "history"         && <HistoryScreen setScreen={setScreen} user={user} onOpenChat={(requestId, _masterId, masterName, masterAvatar) => { setChatContext({ requestId, masterName, masterAvatar }); setChatOpen(true); setScreen("chat"); }} />}
+              {screen === "chat" && !chatOpen && <ChatListScreen user={user} onOpenChat={openChatWithRequest} />}
+              {screen === "chat" && chatOpen  && <ChatScreen user={user} requestId={chatContext?.requestId ?? null} masterName={chatContext?.masterName ?? ""} masterAvatar={chatContext?.masterAvatar ?? ""} onBack={() => setChatOpen(false)} />}
               {screen === "reviews"         && <ReviewsScreen />}
               {screen === "notifications"   && <NotificationsScreen user={user} onUnreadChange={setUnreadCount} />}
               {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} setScreen={setScreen} />}
@@ -226,7 +234,7 @@ export default function Index() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setScreen(item.id as Screen)}
+                  onClick={() => { setChatOpen(false); setScreen(item.id as Screen); }}
                   className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${active && !isCenterBtn ? "bg-neon-cyan/10" : ""}`}
                 >
                   {isCenterBtn ? (

@@ -14,11 +14,12 @@ interface ChatMessage {
   sender_name: string;
 }
 
-export function ChatScreen({ user, requestId, masterName, masterAvatar }: {
+export function ChatScreen({ user, requestId, masterName, masterAvatar, onBack }: {
   user: AuthUser | null;
   requestId: number | null;
   masterName: string;
   masterAvatar: string;
+  onBack?: () => void;
 }) {
   const [message, setMessage] = useState("");
   const [msgs, setMsgs] = useState<ChatMessage[]>([]);
@@ -95,6 +96,11 @@ export function ChatScreen({ user, requestId, masterName, masterAvatar }: {
   return (
     <div className="flex flex-col h-[calc(100vh-200px)]">
       <div className="card-neon rounded-xl p-3 mb-4 flex items-center gap-3">
+        {onBack && (
+          <button onClick={onBack} className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+            <Icon name="ChevronLeft" size={18} className="text-neon-cyan" />
+          </button>
+        )}
         <div className="relative">
           <Avatar initials={masterAvatar || "М"} color="purple" />
           <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-neon-green border-2 border-background" />
@@ -143,6 +149,122 @@ export function ChatScreen({ user, requestId, masterName, masterAvatar }: {
             : <Icon name="Send" size={16} />}
         </button>
       </div>
+    </div>
+  );
+}
+
+// ─── ChatListScreen ───────────────────────────────────────────────────────────
+
+interface AcceptedRequest {
+  id: number;
+  service: string;
+  car: string;
+  status: string;
+  created_at: string;
+  masterName: string;
+  masterAvatar: string;
+}
+
+export function ChatListScreen({ user, onOpenChat }: {
+  user: AuthUser;
+  onOpenChat: (requestId: number, masterName: string, masterAvatar: string) => void;
+}) {
+  const [items, setItems] = useState<AcceptedRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user.role === "master") {
+      fetch(`${API.getBids}?master_id=${user.master_id}&mode=mybids`)
+        .then(r => r.json())
+        .then(raw => {
+          const d = typeof raw === "string" ? JSON.parse(raw) : raw;
+          const accepted = (d.bids || [])
+            .filter((b: { bid_status: string }) => b.bid_status === "accepted")
+            .map((b: { bid_status: string; request: { id: number; service: string; car: string; status: string; created_at: string } }) => ({
+              id: b.request.id,
+              service: b.request.service,
+              car: b.request.car,
+              status: b.request.status,
+              created_at: b.request.created_at,
+              masterName: user.name,
+              masterAvatar: user.name.slice(0, 2).toUpperCase(),
+            }));
+          setItems(accepted);
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    } else {
+      fetch(`${API.getBids}?client_id=${user.id}`)
+        .then(r => r.json())
+        .then(raw => {
+          const d = typeof raw === "string" ? JSON.parse(raw) : raw;
+          const accepted = (d.requests || [])
+            .filter((r: { id: number; service: string; car: string; status: string; created_at: string }) => r.status === "accepted" || r.status === "closed")
+            .map((r: { id: number; service: string; car: string; status: string; created_at: string }) => ({
+              id: r.id,
+              service: r.service,
+              car: r.car,
+              status: r.status,
+              created_at: r.created_at,
+              masterName: "Мастер",
+              masterAvatar: "М",
+            }));
+          setItems(accepted);
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    }
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-3">
+        {[0, 1, 2].map(i => (
+          <div key={i} className="card-neon rounded-xl p-4 animate-pulse">
+            <div className="h-4 bg-secondary rounded w-40 mb-2" />
+            <div className="h-3 bg-secondary rounded w-24" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
+        <Icon name="MessageCircle" size={48} className="text-muted-foreground/30" />
+        <p className="text-sm font-semibold text-white">Нет активных чатов</p>
+        <p className="text-xs text-muted-foreground">Чаты появятся после принятия заявки</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {items.map(item => (
+        <button
+          key={item.id}
+          onClick={() => onOpenChat(item.id, item.masterName, item.masterAvatar)}
+          className="card-neon rounded-xl p-4 text-left hover:border-neon-cyan/40 transition-all w-full"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-neon-cyan/15 text-neon-cyan border border-neon-cyan/30 flex items-center justify-center text-sm font-bold font-mono-tech flex-shrink-0">
+              <Icon name="MessageCircle" size={18} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-white text-sm truncate">{item.service}</p>
+              <p className="text-xs text-muted-foreground truncate">{item.car}</p>
+            </div>
+            <div className="flex flex-col items-end gap-1 flex-shrink-0">
+              <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${item.status === "closed" ? "text-muted-foreground bg-secondary border-border" : "text-neon-green bg-neon-green/10 border-neon-green/30"}`}>
+                {item.status === "closed" ? "Закрыта" : "Активна"}
+              </span>
+              <Icon name="ChevronRight" size={14} className="text-muted-foreground/40" />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">Заявка #{item.id}</p>
+        </button>
+      ))}
     </div>
   );
 }
