@@ -179,7 +179,7 @@ export function ChatListScreen({ user, onOpenChat }: {
         .then(raw => {
           const d = typeof raw === "string" ? JSON.parse(raw) : raw;
           const accepted = (d.bids || [])
-            .filter((b: { bid_status: string }) => b.bid_status === "accepted")
+            .filter((b: { bid_status: string; request: { status: string } }) => b.bid_status === "accepted" && b.request.status !== "closed")
             .map((b: { bid_status: string; request: { id: number; service: string; car: string; status: string; created_at: string } }) => ({
               id: b.request.id,
               service: b.request.service,
@@ -199,7 +199,7 @@ export function ChatListScreen({ user, onOpenChat }: {
         .then(raw => {
           const d = typeof raw === "string" ? JSON.parse(raw) : raw;
           const accepted = (d.requests || [])
-            .filter((r: { id: number; service: string; car: string; status: string; created_at: string }) => r.status === "accepted" || r.status === "closed")
+            .filter((r: { id: number; service: string; car: string; status: string; created_at: string }) => r.status === "accepted")
             .map((r: { id: number; service: string; car: string; status: string; created_at: string }) => ({
               id: r.id,
               service: r.service,
