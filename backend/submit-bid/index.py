@@ -102,7 +102,7 @@ def handler(event: dict, context) -> dict:
         new_rating, new_count = cur.fetchone()
 
         if request_id:
-            cur.execute(f"UPDATE {SCHEMA}.requests SET reviewed = TRUE WHERE id = %s", (int(request_id),))
+            cur.execute(f"UPDATE {SCHEMA}.requests SET reviewed = TRUE, status = 'closed' WHERE id = %s", (int(request_id),))
 
         stars = "★" * rating + "☆" * (5 - rating)
         cur.execute(
