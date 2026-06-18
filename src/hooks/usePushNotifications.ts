@@ -57,7 +57,10 @@ export function usePushNotifications(masterId: number | null, userId: number | n
         const saveData = await saveRes.json();
         console.log("[push] saved", saveData);
         setSubscribed(true);
-      } catch (e) { console.error("[push] error", e); }
+      } catch (e) {
+        const err = e as Error;
+        console.error("[push] error", err?.name, err?.message, String(e));
+      }
     };
 
     register();
