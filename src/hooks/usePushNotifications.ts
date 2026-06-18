@@ -24,34 +24,40 @@ export function usePushNotifications(masterId: number | null, userId: number | n
         const reg = await navigator.serviceWorker.register("/sw.js");
         await navigator.serviceWorker.ready;
 
-        const existing = await reg.pushManager.getSubscription();
-        if (existing) { setSubscribed(true); return; }
-
         const res = await fetch(`${API.pushSubscribe}?vapid_public_key=1`);
         const raw = await res.json();
         const d = typeof raw === "string" ? JSON.parse(raw) : raw;
         const vapidKey = d.vapid_public_key;
-        if (!vapidKey) return;
+        if (!vapidKey) { console.warn("[push] VAPID key missing"); return; }
 
-        const sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(vapidKey),
-        });
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidKey),
+          });
+        }
 
         const subJson = sub.toJSON();
-        await fetch(API.pushSubscribe, {
+        const payload: Record<string, unknown> = {
+          action: "subscribe",
+          endpoint: subJson.endpoint,
+          p256dh: subJson.keys?.p256dh,
+          auth: subJson.keys?.auth,
+        };
+        if (masterId) payload.master_id = masterId;
+        if (userId) payload.user_id = userId;
+
+        console.log("[push] subscribing", payload);
+        const saveRes = await fetch(API.pushSubscribe, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "subscribe",
-            ...(masterId ? { master_id: masterId } : { user_id: userId }),
-            endpoint: subJson.endpoint,
-            p256dh: subJson.keys?.p256dh,
-            auth: subJson.keys?.auth,
-          }),
+          body: JSON.stringify(payload),
         });
+        const saveData = await saveRes.json();
+        console.log("[push] saved", saveData);
         setSubscribed(true);
-      } catch { /* браузер отклонил или не поддерживает */ }
+      } catch (e) { console.error("[push] error", e); }
     };
 
     register();
