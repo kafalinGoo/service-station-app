@@ -159,6 +159,9 @@ export function AnalyticsScreen({ user }: { user: AuthUser }) {
 
   const fmtMoney = (v: number) => v.toLocaleString("ru");
   const fmtDelta = (d: string) => (d.startsWith("+") || d.startsWith("-") ? d : `+${d}`);
+  const isNeg = (d: string) => d.startsWith("-");
+  const deltaColor = (d: string) => isNeg(d) ? "text-destructive" : "text-neon-green";
+  const deltaArrow = (d: string) => isNeg(d) ? "↓" : "↑";
 
   const metrics = data ? [
     { label: "Заказов выполнено", value: String(data.orders), delta: fmtDelta(data.orders_delta), icon: "CheckCircle", color: "text-neon-green", onClick: undefined },
@@ -193,7 +196,7 @@ export function AnalyticsScreen({ user }: { user: AuthUser }) {
             <p className="text-3xl font-black text-white font-mono-tech glow-text-cyan">
               {data ? fmtMoney(data.revenue) : "0"} <span className="text-lg">₽</span>
             </p>
-            <p className="text-xs text-neon-green mt-1">↑ {data?.revenue_delta ?? "—"}</p>
+            <p className={`text-xs mt-1 ${deltaColor(data?.revenue_delta ?? "")}`}>{deltaArrow(data?.revenue_delta ?? "")} {data?.revenue_delta ?? "—"}</p>
             <div className="flex items-end gap-2 mt-5 h-24">
               {bars.length === 0 ? (
                 <p className="text-xs text-muted-foreground self-center mx-auto">Нет данных за период</p>
@@ -230,7 +233,7 @@ export function AnalyticsScreen({ user }: { user: AuthUser }) {
               <Icon name={m.icon} size={18} className={m.color} />
               <p className="text-xl font-black text-white font-mono-tech mt-2">{m.value}</p>
               <p className="text-xs text-muted-foreground">{m.label}</p>
-              <p className="text-xs text-neon-green mt-1">{m.delta}</p>
+              <p className={`text-xs mt-1 ${deltaColor(m.delta)}`}>{deltaArrow(m.delta)} {m.delta}</p>
               <Icon name="ChevronRight" size={12} className="absolute top-4 right-4 text-muted-foreground/40" />
             </button>
           ) : (
@@ -238,7 +241,7 @@ export function AnalyticsScreen({ user }: { user: AuthUser }) {
               <Icon name={m.icon} size={18} className={m.color} />
               <p className="text-xl font-black text-white font-mono-tech mt-2">{m.value}</p>
               <p className="text-xs text-muted-foreground">{m.label}</p>
-              <p className="text-xs text-neon-green mt-1">{m.delta}</p>
+              <p className={`text-xs mt-1 ${deltaColor(m.delta)}`}>{deltaArrow(m.delta)} {m.delta}</p>
             </div>
           )
         ))}
