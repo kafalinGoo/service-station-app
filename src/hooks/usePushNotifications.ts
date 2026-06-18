@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { API } from "@/pages/appTypes";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
@@ -9,15 +9,9 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 }
 
 export function usePushNotifications(masterId: number | null, userId: number | null = null) {
-  const [subscribed, setSubscribed] = useState(false);
-  const [supported, setSupported] = useState(false);
-
   useEffect(() => {
-    setSupported("serviceWorker" in navigator && "PushManager" in window);
-  }, []);
-
-  useEffect(() => {
-    if (!supported || (!masterId && !userId)) return;
+    if (!masterId && !userId) return;
+    if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
 
     const register = async () => {
       try {
@@ -37,6 +31,7 @@ export function usePushNotifications(masterId: number | null, userId: number | n
             applicationServerKey: urlBase64ToUint8Array(vapidKey),
           });
         }
+        if (!sub) { console.warn("[push] no subscription"); return; }
 
         const subJson = sub.toJSON();
         const payload: Record<string, unknown> = {
@@ -56,15 +51,12 @@ export function usePushNotifications(masterId: number | null, userId: number | n
         });
         const saveData = await saveRes.json();
         console.log("[push] saved", saveData);
-        setSubscribed(true);
       } catch (e) {
         const err = e as Error;
-        console.error("[push] error", err?.name, err?.message, String(e));
+        console.error("[push] error", err?.name, err?.message);
       }
     };
 
     register();
-  }, [supported, masterId, userId]);
-
-  return { subscribed, supported };
+  }, [masterId, userId]);
 }
