@@ -13,8 +13,6 @@ interface Props {
   setMasterAddress: (v: string) => void;
   masterCity: string;
   setMasterCity: (v: string) => void;
-  masterPriceFrom: string;
-  setMasterPriceFrom: (v: string) => void;
   masterLoading: boolean;
   setMasterLoading: (v: boolean) => void;
   masterRating: number | null;
@@ -37,7 +35,6 @@ export function MasterStation({
   masterSpecialties, setMasterSpecialties,
   masterAddress, setMasterAddress,
   masterCity, setMasterCity,
-  masterPriceFrom, setMasterPriceFrom,
   masterLoading, setMasterLoading,
   masterRating, setMasterRating,
   masterReviewsCount, setMasterReviewsCount,
@@ -58,7 +55,6 @@ export function MasterStation({
         setMasterSpecialties(data.specialty ? data.specialty.split(", ").filter(Boolean) : []);
         setMasterAddress(data.address || "");
         setMasterCity(data.city || "");
-        setMasterPriceFrom(data.price_from ? String(data.price_from) : "");
         setMasterRating(data.rating ?? null);
         setMasterReviewsCount(data.reviews_count ?? 0);
       }
@@ -74,7 +70,6 @@ export function MasterStation({
       if (masterStation.trim()) payload.station = masterStation.trim();
       if (masterSpecialties.length) payload.specialty = masterSpecialties.join(", ");
       payload.address = masterAddress.trim();
-      if (masterPriceFrom) payload.price_from = parseInt(masterPriceFrom) || 0;
       const res = await fetch(API.auth, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const raw = await res.json();
       const data = typeof raw === "string" ? JSON.parse(raw) : raw;

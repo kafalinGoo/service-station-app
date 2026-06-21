@@ -350,7 +350,7 @@ def handler(event: dict, context) -> dict:
             cur.execute(
                 f"""
                 SELECT id, name, station, specialty, rating, reviews_count,
-                       completed_orders, price_from, online, avatar, address, city
+                       completed_orders, online, avatar, address, city
                 FROM {SCHEMA}.masters
                 WHERE LOWER(city) = LOWER(%s)
                 ORDER BY rating DESC, reviews_count DESC
@@ -361,7 +361,7 @@ def handler(event: dict, context) -> dict:
             cur.execute(
                 f"""
                 SELECT id, name, station, specialty, rating, reviews_count,
-                       completed_orders, price_from, online, avatar, address, city
+                       completed_orders, online, avatar, address, city
                 FROM {SCHEMA}.masters
                 ORDER BY rating DESC, reviews_count DESC
                 """,
@@ -372,8 +372,8 @@ def handler(event: dict, context) -> dict:
             masters.append({
                 "id": row[0], "name": row[1], "station": row[2], "specialty": row[3],
                 "rating": float(row[4]), "reviews_count": row[5], "completed_orders": row[6],
-                "price_from": row[7], "online": row[8], "avatar": row[9],
-                "address": row[10], "city": row[11],
+                "online": row[7], "avatar": row[8],
+                "address": row[9], "city": row[10],
             })
         cur.close(); conn.close()
         return ok({"masters": masters, "count": len(masters), "city": city})
@@ -383,7 +383,7 @@ def handler(event: dict, context) -> dict:
         cur.execute(
             f"""
             SELECT id, name, station, specialty, rating, reviews_count,
-                   completed_orders, price_from, online, avatar, address, city,
+                   completed_orders, online, avatar, address, city,
                    notifications_enabled
             FROM {SCHEMA}.masters WHERE id = %s
             """,
@@ -397,8 +397,8 @@ def handler(event: dict, context) -> dict:
         return ok({
             "id": row[0], "name": row[1], "station": row[2], "specialty": row[3],
             "rating": float(row[4]), "reviews_count": row[5], "completed_orders": row[6],
-            "price_from": row[7], "online": row[8], "avatar": row[9], "address": row[10], "city": row[11],
-            "notifications_enabled": row[12] if row[12] is not None else True,
+            "online": row[7], "avatar": row[8], "address": row[9], "city": row[10],
+            "notifications_enabled": row[11] if row[11] is not None else True,
         })
 
     cur.close(); conn.close()

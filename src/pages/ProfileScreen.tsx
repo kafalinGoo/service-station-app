@@ -19,7 +19,6 @@ export function ProfileScreen({ user, onLogout, setScreen }: { user: AuthUser; o
   const [masterSpecialties, setMasterSpecialties] = useState<string[]>([]);
   const [masterAddress, setMasterAddress] = useState("");
   const [masterCity, setMasterCity] = useState("");
-  const [masterPriceFrom, setMasterPriceFrom] = useState("");
   const [masterRating, setMasterRating] = useState<number | null>(null);
   const [masterReviewsCount, setMasterReviewsCount] = useState(0);
   const [masterLoading, setMasterLoading] = useState(false);
@@ -42,7 +41,6 @@ export function ProfileScreen({ user, onLogout, setScreen }: { user: AuthUser; o
           setMasterSpecialties(data.specialty ? data.specialty.split(", ").filter(Boolean) : []);
           setMasterAddress(data.address || "");
           setMasterCity(data.city || "");
-          setMasterPriceFrom(data.price_from ? String(data.price_from) : "");
           setMasterRating(data.rating ?? null);
           setMasterReviewsCount(data.reviews_count ?? 0);
           setNotificationsEnabled(data.notifications_enabled !== false);
@@ -66,7 +64,6 @@ export function ProfileScreen({ user, onLogout, setScreen }: { user: AuthUser; o
           masterSpecialties={masterSpecialties} setMasterSpecialties={setMasterSpecialties}
           masterAddress={masterAddress} setMasterAddress={setMasterAddress}
           masterCity={masterCity} setMasterCity={setMasterCity}
-          masterPriceFrom={masterPriceFrom} setMasterPriceFrom={setMasterPriceFrom}
           masterLoading={masterLoading} setMasterLoading={setMasterLoading}
           masterRating={masterRating} setMasterRating={setMasterRating}
           masterReviewsCount={masterReviewsCount} setMasterReviewsCount={setMasterReviewsCount}

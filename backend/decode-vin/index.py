@@ -147,8 +147,8 @@ def handler(event: dict, context) -> dict:
                 except Exception:
                     pass
             cur.execute(
-                f"""INSERT INTO {SCHEMA}.masters (name, station, specialty, rating, reviews_count, completed_orders, price_from, online, avatar, address, city, phone)
-                    VALUES (%s, %s, %s, 5.0, 0, 0, 1000, false, %s, %s, %s, %s) RETURNING id""",
+                f"""INSERT INTO {SCHEMA}.masters (name, station, specialty, rating, reviews_count, completed_orders, online, avatar, address, city, phone)
+                    VALUES (%s, %s, %s, 5.0, 0, 0, false, %s, %s, %s, %s) RETURNING id""",
                 (name, station, specialty, name[:2].upper(), address, city, phone),
             )
             master_id = cur.fetchone()[0]

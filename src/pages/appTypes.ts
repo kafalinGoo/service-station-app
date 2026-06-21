@@ -98,7 +98,6 @@ export interface ApiMaster {
   rating: number;
   reviews_count: number;
   completed_orders: number;
-  price_from: number;
   online: boolean;
   avatar: string;
   address?: string | null;
