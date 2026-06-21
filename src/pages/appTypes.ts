@@ -84,7 +84,6 @@ export interface Master {
   rating: number;
   reviews: number;
   specialty: string;
-  price: string;
   online: boolean;
   avatar: string;
   completedOrders: number;
@@ -166,10 +165,10 @@ export interface ApiNotif {
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
 export const masters: Master[] = [
-  { id: 1, name: "Алексей Коваль", station: "AutoPro Сервис", rating: 4.9, reviews: 312, specialty: "Двигатели", price: "от 2 500 ₽", online: true, avatar: "AK", completedOrders: 847 },
-  { id: 2, name: "Дмитрий Синицын", station: "TechDrive", rating: 4.8, reviews: 215, specialty: "Электрика", price: "от 1 800 ₽", online: true, avatar: "ДС", completedOrders: 634 },
-  { id: 3, name: "Игорь Петров", station: "МастерТО", rating: 4.7, reviews: 189, specialty: "Ходовая", price: "от 1 200 ₽", online: false, avatar: "ИП", completedOrders: 512 },
-  { id: 4, name: "Виктор Лазарев", station: "AutoPro Сервис", rating: 4.8, reviews: 278, specialty: "Кузов", price: "от 3 000 ₽", online: true, avatar: "ВЛ", completedOrders: 703 },
+  { id: 1, name: "Алексей Коваль", station: "AutoPro Сервис", rating: 4.9, reviews: 312, specialty: "Двигатели", online: true, avatar: "AK", completedOrders: 847 },
+  { id: 2, name: "Дмитрий Синицын", station: "TechDrive", rating: 4.8, reviews: 215, specialty: "Электрика", online: true, avatar: "ДС", completedOrders: 634 },
+  { id: 3, name: "Игорь Петров", station: "МастерТО", rating: 4.7, reviews: 189, specialty: "Ходовая", online: false, avatar: "ИП", completedOrders: 512 },
+  { id: 4, name: "Виктор Лазарев", station: "AutoPro Сервис", rating: 4.8, reviews: 278, specialty: "Кузов", online: true, avatar: "ВЛ", completedOrders: 703 },
 ];
 
 export const orders: Order[] = [

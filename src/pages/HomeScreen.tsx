@@ -114,7 +114,7 @@ export function HomeScreen({ setScreen, goToNewRequest, onShowAllMasters }: { se
                   </div>
                   <div className="flex justify-between items-center mt-2">
                     <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">{m.specialty}</span>
-                    <span className="text-xs font-semibold text-white">{m.price}</span>
+                    {m.completedOrders > 0 && <span className="text-xs text-muted-foreground">{m.completedOrders} заказов</span>}
                   </div>
                 </div>
               </div>
