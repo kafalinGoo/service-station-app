@@ -26,7 +26,8 @@ export async function addUserCar(userId: number, car: { brand: string; model: st
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "add_car", user_id: userId, ...car }),
   });
-  const data = await res.json();
+  const raw = await res.json();
+  const data = typeof raw === "string" ? JSON.parse(raw) : (raw.body ? (typeof raw.body === "string" ? JSON.parse(raw.body) : raw.body) : raw);
   return data.car;
 }
 
