@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 
 const IOS_GIF = "https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/files/8bd505da-dfbc-4167-bd35-86047859d2aa.jpg";
-const ANDROID_GIF = "https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/bucket/assets/android-install.gif";
+const ANDROID_GIF = "https://cdn.poehali.dev/projects/a7200fd4-8221-44d9-8f62-6b46864044c2/bucket/6b2dab0b-12a6-439d-b6d5-9f29c75732ae.png";
 const STORAGE_KEY = "smart-banner-dismissed";
 
 function getOS(): "ios" | "android" | "other" {
