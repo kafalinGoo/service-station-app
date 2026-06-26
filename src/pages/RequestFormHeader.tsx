@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
-import { API, ApiMaster } from "./appTypes";
+import { masters } from "./appTypes";
 
 interface Props {
   targetMasterId: number | null;
@@ -23,36 +22,19 @@ export function RequestFormHeader({
   setCityEdit,
   setCity,
 }: Props) {
-  const [targetMaster, setTargetMaster] = useState<ApiMaster | null>(null);
-
-  useEffect(() => {
-    if (!targetMasterId) return;
-    fetch(`${API.getBids}?mode=masters`)
-      .then(r => r.json())
-      .then(d => {
-        const found = (d.masters || []).find((m: ApiMaster) => m.id === targetMasterId);
-        if (found) setTargetMaster(found);
-      })
-      .catch(() => {});
-  }, [targetMasterId]);
-
   return (
     <>
       <div>
         <h2 className="text-lg font-black text-white mb-1">Новый запрос</h2>
-        {targetMasterId ? (
-          targetMaster ? (
+        {targetMasterId ? (() => {
+          const m = masters.find(x => x.id === targetMasterId);
+          return m ? (
             <div className="flex items-center gap-2 mt-1 px-3 py-2 rounded-xl bg-neon-cyan/5 border border-neon-cyan/20">
               <Icon name="User" size={14} className="text-neon-cyan flex-shrink-0" />
-              <p className="text-xs text-neon-cyan">Запрос уйдёт напрямую — <span className="font-semibold">{targetMaster.name}</span>, {targetMaster.station}</p>
+              <p className="text-xs text-neon-cyan">Запрос уйдёт напрямую — <span className="font-semibold">{m.name}</span>, {m.station}</p>
             </div>
-          ) : (
-            <div className="flex items-center gap-2 mt-1 px-3 py-2 rounded-xl bg-neon-cyan/5 border border-neon-cyan/20">
-              <Icon name="User" size={14} className="text-neon-cyan flex-shrink-0" />
-              <p className="text-xs text-neon-cyan">Запрос уйдёт напрямую выбранному мастеру</p>
-            </div>
-          )
-        ) : (
+          ) : null;
+        })() : (
           <p className="text-xs text-muted-foreground">Запрос будет разослан всем мастерам по выбранной категории</p>
         )}
       </div>
