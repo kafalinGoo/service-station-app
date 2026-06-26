@@ -4,7 +4,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 import {
   API, Screen, AuthUser,
-  notifications, navItems, masterNavItems, screenTitles,
+  navItems, masterNavItems, screenTitles,
   getStoredUser, clearUser,
 } from "./appTypes";
 
@@ -224,7 +224,7 @@ export default function Index() {
               {screen === "history"         && <HistoryScreen setScreen={setScreen} user={user} onOpenChat={(requestId, _masterId, masterName, masterAvatar) => { setChatContext({ requestId, masterName, masterAvatar }); setChatOpen(true); setScreen("chat"); }} />}
               {screen === "chat" && !chatOpen && <ChatListScreen user={user} onOpenChat={openChatWithRequest} />}
               {screen === "chat" && chatOpen  && <ChatScreen user={user} requestId={chatContext?.requestId ?? null} masterName={chatContext?.masterName ?? ""} masterAvatar={chatContext?.masterAvatar ?? ""} onBack={() => setChatOpen(false)} />}
-              {screen === "reviews"         && <ReviewsScreen />}
+              {screen === "reviews"         && <ReviewsScreen user={user} />}
               {screen === "notifications"   && <NotificationsScreen user={user} onUnreadChange={setUnreadCount} />}
               {screen === "profile"         && <ProfileScreen user={user} onLogout={handleLogout} setScreen={setScreen} />}
               {screen === "analytics"       && <AnalyticsScreen user={user} />}

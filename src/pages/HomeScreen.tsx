@@ -1,8 +1,18 @@
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
-import { Screen, Master, masters, ordersWord } from "./appTypes";
+import { Screen, ApiMaster, API, ordersWord } from "./appTypes";
 import { Stars, Avatar } from "./appHelpers";
 
 export function HomeScreen({ setScreen, goToNewRequest, onShowAllMasters }: { setScreen: (s: Screen) => void; goToNewRequest: (masterId?: number, service?: string) => void; onShowAllMasters: () => void }) {
+  const [masters, setMasters] = useState<ApiMaster[]>([]);
+
+  useEffect(() => {
+    fetch(`${API.getBids}?mode=masters`)
+      .then(r => r.json())
+      .then(d => setMasters((d.masters || []).slice(0, 4)))
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="flex flex-col gap-5 pb-4">
       <div className="relative overflow-hidden rounded-2xl p-5 border border-neon-cyan/20" style={{ background: "linear-gradient(135deg, hsla(185,100%,15%,0.3) 0%, hsla(270,80%,20%,0.2) 100%)" }}>
@@ -92,11 +102,11 @@ export function HomeScreen({ setScreen, goToNewRequest, onShowAllMasters }: { se
           <button onClick={onShowAllMasters} className="text-xs text-neon-cyan font-mono-tech hover:text-neon-cyan/70 transition-colors">Все →</button>
         </div>
         <div className="flex flex-col gap-3">
-          {masters.map((m: Master, i: number) => (
+          {masters.map((m, i) => (
             <div key={m.id} className="card-neon rounded-xl p-4 animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
               <div className="flex items-start gap-3">
                 <div className="relative">
-                  <Avatar initials={m.avatar} />
+                  <Avatar initials={m.avatar || m.name.slice(0, 2).toUpperCase()} />
                   {m.online && <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-neon-green border-2 border-background neon-pulse" />}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -109,12 +119,12 @@ export function HomeScreen({ setScreen, goToNewRequest, onShowAllMasters }: { se
                   </div>
                   <div className="flex items-center gap-3 mt-2">
                     <Stars rating={m.rating} />
-                    <span className="text-xs font-mono-tech text-neon-cyan">{m.rating}</span>
-                    <span className="text-xs text-muted-foreground">{m.reviews} отзывов</span>
+                    <span className="text-xs font-mono-tech text-neon-cyan">{m.rating.toFixed(1)}</span>
+                    <span className="text-xs text-muted-foreground">{m.reviews_count} отзывов</span>
                   </div>
                   <div className="flex justify-between items-center mt-2">
                     <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20">{m.specialty}</span>
-                    {m.completedOrders > 0 && <span className="font-mono-tech text-xs font-medium"><span className="text-neon-cyan">{m.completedOrders}</span> <span className="text-white">{ordersWord(m.completedOrders)}</span></span>}
+                    {m.completed_orders > 0 && <span className="font-mono-tech text-xs font-medium"><span className="text-neon-cyan">{m.completed_orders}</span> <span className="text-white"> {ordersWord(m.completed_orders)}</span></span>}
                   </div>
                 </div>
               </div>

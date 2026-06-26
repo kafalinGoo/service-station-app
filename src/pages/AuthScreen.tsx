@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
-import { API, AuthUser, storeUser } from "./appTypes";
+import { API, AuthUser, storeUser, SPECIALTIES } from "./appTypes";
 import { PrivacyScreen } from "./PrivacyScreen";
 
 interface Props {
@@ -9,8 +9,6 @@ interface Props {
 
 type Mode = "login" | "register";
 type Role = "client" | "master";
-
-const SPECIALTIES = ["ТО", "Двигатели", "Электрика", "Ходовая", "Кузов", "Шиномонтаж", "Русификация"];
 
 export default function AuthScreen({ onAuth }: Props) {
   const [mode, setMode] = useState<Mode>("login");

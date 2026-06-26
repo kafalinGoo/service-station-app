@@ -1,7 +1,5 @@
 import Icon from "@/components/ui/icon";
-import { API } from "../appTypes";
-
-const SPECIALTIES = ["ТО", "Двигатели", "Электрика", "Ходовая", "Кузов", "Шиномонтаж", "Русификация"];
+import { API, SPECIALTIES } from "../appTypes";
 
 interface Props {
   masterId: number;

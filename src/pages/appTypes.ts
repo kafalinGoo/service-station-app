@@ -92,18 +92,6 @@ export type Screen =
   | "privacy"
   | "all-masters";
 
-export interface Master {
-  id: number;
-  name: string;
-  station: string;
-  rating: number;
-  reviews: number;
-  specialty: string;
-  online: boolean;
-  avatar: string;
-  completedOrders: number;
-}
-
 export interface ApiMaster {
   id: number;
   name: string;
@@ -138,26 +126,6 @@ export interface Order {
   car: string;
 }
 
-export interface Notification {
-  id: number;
-  title: string;
-  text: string;
-  time: string;
-  read: boolean;
-  type: "status" | "message" | "promo" | "review";
-}
-
-export interface Review {
-  id: number;
-  master: string;
-  station: string;
-  rating: number;
-  text: string;
-  date: string;
-  service: string;
-  avatar: string;
-}
-
 export interface UserCar {
   id: number;
   brand: string;
@@ -177,45 +145,9 @@ export interface ApiNotif {
   created_at: string;
 }
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
+// ─── Specialties ──────────────────────────────────────────────────────────────
 
-export const masters: Master[] = [
-  { id: 1, name: "Алексей Коваль", station: "AutoPro Сервис", rating: 4.9, reviews: 312, specialty: "Двигатели", online: true, avatar: "AK", completedOrders: 847 },
-  { id: 2, name: "Дмитрий Синицын", station: "TechDrive", rating: 4.8, reviews: 215, specialty: "Электрика", online: true, avatar: "ДС", completedOrders: 634 },
-  { id: 3, name: "Игорь Петров", station: "МастерТО", rating: 4.7, reviews: 189, specialty: "Ходовая", online: false, avatar: "ИП", completedOrders: 512 },
-  { id: 4, name: "Виктор Лазарев", station: "AutoPro Сервис", rating: 4.8, reviews: 278, specialty: "Кузов", online: true, avatar: "ВЛ", completedOrders: 703 },
-];
-
-export const orders: Order[] = [
-  { id: "ORD-2847", service: "Замена масла и фильтров", master: "Алексей Коваль", station: "AutoPro Сервис", date: "28 мая 2026", status: "done", price: "3 200 ₽", car: "Toyota Camry 2021" },
-  { id: "ORD-2901", service: "Диагностика двигателя", master: "Дмитрий Синицын", station: "TechDrive", date: "30 мая 2026", status: "progress", price: "2 800 ₽", car: "BMW X5 2020" },
-  { id: "ORD-2935", service: "Замена тормозных колодок", master: "Игорь Петров", station: "МастерТО", date: "31 мая 2026", status: "new", price: "4 500 ₽", car: "Toyota Camry 2021" },
-  { id: "ORD-2760", service: "Замена аккумулятора", master: "Виктор Лазарев", station: "AutoPro Сервис", date: "15 мая 2026", status: "done", price: "6 800 ₽", car: "BMW X5 2020" },
-  { id: "ORD-2703", service: "Шиномонтаж (4 колеса)", master: "Игорь Петров", station: "МастерТО", date: "10 мая 2026", status: "cancelled", price: "1 600 ₽", car: "Toyota Camry 2021" },
-];
-
-export const notifications: Notification[] = [
-  { id: 1, title: "Заказ принят в работу", text: "Дмитрий Синицын начал диагностику вашего BMW X5", time: "5 мин назад", read: false, type: "status" },
-  { id: 2, title: "Новое сообщение", text: "Алексей Коваль: «Масло заменено, готов отчёт»", time: "2 часа назад", read: false, type: "message" },
-  { id: 3, title: "Заказ выполнен", text: "ORD-2847 успешно завершён. Стоимость: 3 200 ₽", time: "Вчера", read: true, type: "status" },
-  { id: 4, title: "Оставьте отзыв", text: "Как прошло обслуживание у Алексея Коваля?", time: "Вчера", read: true, type: "review" },
-  { id: 5, title: "Акция AutoPro Сервис", text: "Скидка 20% на ТО при записи до 5 июня", time: "2 дня назад", read: true, type: "promo" },
-];
-
-export const reviews: Review[] = [
-  { id: 1, master: "Алексей Коваль", station: "AutoPro Сервис", rating: 5, text: "Профессионал высшего уровня! Всё чётко, быстро и по делу. Двигатель работает как новый.", date: "28 мая 2026", service: "Замена масла", avatar: "AK" },
-  { id: 2, master: "Дмитрий Синицын", station: "TechDrive", rating: 5, text: "Нашёл проблему в электрике за 20 минут, которую другие 3 сервиса не могли найти месяц. Рекомендую!", date: "22 мая 2026", service: "Диагностика", avatar: "ДС" },
-  { id: 3, master: "Игорь Петров", station: "МастерТО", rating: 4, text: "Хорошая работа по ходовой. Небольшая задержка, но качество на высоте.", date: "18 мая 2026", service: "Ходовая", avatar: "ИП" },
-];
-
-export const chatMessages = [
-  { id: 1, mine: false, text: "Добрый день! Ваш автомобиль принят. Начинаем диагностику двигателя.", time: "10:32" },
-  { id: 2, mine: true, text: "Отлично, спасибо! Сколько примерно займёт?", time: "10:35" },
-  { id: 3, mine: false, text: "Около 2 часов. По завершении пришлю полный отчёт с фото.", time: "10:36" },
-  { id: 4, mine: false, text: "Предварительно нашли небольшую утечку масла. Устранить прямо сейчас?", time: "11:15" },
-  { id: 5, mine: true, text: "Да, пожалуйста, устраните всё сразу.", time: "11:18" },
-  { id: 6, mine: false, text: "Принято! Добавлю к чеку. Итоговая сумма будет около 4 200 ₽.", time: "11:19" },
-];
+export const SPECIALTIES = ["ТО", "Двигатели", "Электрика", "Ходовая", "Кузов", "Шиномонтаж", "Русификация"];
 
 export const services = [
   "Замена масла и фильтров",
@@ -261,8 +193,6 @@ export const CAR_LIST = [
   "Geely Coolray","Geely Atlas Pro","Geely Monjaro",
   "Haval F7","Haval Jolion","Haval H9",
 ];
-
-export const CAR_COLORS = ["Белый","Чёрный","Серый","Серебристый","Красный","Синий","Зелёный","Бежевый","Коричневый","Жёлтый","Оранжевый","Другой"];
 
 export const userCarsKey = "user_cars_v1";
 export function loadUserCars(): UserCar[] {

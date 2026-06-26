@@ -1,29 +1,13 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
-import { API, ordersWord } from "./appTypes";
+import { API, ApiMaster, ordersWord, SPECIALTIES } from "./appTypes";
 import { Stars, Avatar } from "./appHelpers";
-
-interface ApiMaster {
-  id: number;
-  name: string;
-  station: string;
-  specialty: string;
-  rating: number;
-  reviews_count: number;
-  completed_orders: number;
-  online: boolean;
-  avatar: string;
-  address: string | null;
-  city: string | null;
-}
 
 interface Props {
   city: string;
   onBack: () => void;
   goToNewRequest: (masterId?: number) => void;
 }
-
-const SPECIALTIES = ["ТО", "Двигатели", "Электрика", "Ходовая", "Кузов", "Шиномонтаж", "Русификация"];
 
 export function AllMastersScreen({ city, onBack, goToNewRequest }: Props) {
   const [masters, setMasters] = useState<ApiMaster[]>([]);

@@ -401,5 +401,65 @@ def handler(event: dict, context) -> dict:
             "notifications_enabled": row[11] if row[11] is not None else True,
         })
 
+    # ── GET: отзывы клиента (что он оставил) ─────────────────────────────────
+    if client_id and mode == "client_reviews":
+        cur.execute(
+            f"""
+            SELECT rv.id, rv.rating, rv.text, rv.created_at,
+                   m.name AS master_name, m.station, r.service
+            FROM {SCHEMA}.reviews rv
+            JOIN {SCHEMA}.masters m ON m.id = rv.master_id
+            LEFT JOIN {SCHEMA}.requests r ON r.id = rv.request_id
+            WHERE rv.client_id = %s
+            ORDER BY rv.created_at DESC
+            """,
+            (int(client_id),),
+        )
+        rows = cur.fetchall()
+        reviews = [
+            {
+                "id": row[0], "rating": row[1], "text": row[2],
+                "created_at": str(row[3]), "master_name": row[4],
+                "station": row[5], "service": row[6],
+            }
+            for row in rows
+        ]
+        cur.close(); conn.close()
+        return ok({"reviews": reviews})
+
+    # ── GET: отзывы о мастере ─────────────────────────────────────────────────
+    if master_id and mode == "reviews":
+        cur.execute(
+            f"""
+            SELECT rv.id, rv.rating, rv.text, rv.created_at,
+                   u.name AS client_name
+            FROM {SCHEMA}.reviews rv
+            JOIN {SCHEMA}.users u ON u.id = rv.client_id
+            WHERE rv.master_id = %s
+            ORDER BY rv.created_at DESC
+            LIMIT 50
+            """,
+            (int(master_id),),
+        )
+        rows = cur.fetchall()
+        reviews = [
+            {
+                "id": row[0], "rating": row[1], "text": row[2],
+                "created_at": str(row[3]), "client_name": row[4],
+            }
+            for row in rows
+        ]
+        cur.execute(
+            f"SELECT COALESCE(AVG(rating),0), COUNT(*) FROM {SCHEMA}.reviews WHERE master_id = %s",
+            (int(master_id),),
+        )
+        stat = cur.fetchone()
+        cur.close(); conn.close()
+        return ok({
+            "reviews": reviews,
+            "avg_rating": round(float(stat[0]), 1),
+            "total": int(stat[1]),
+        })
+
     cur.close(); conn.close()
     return err("Укажите client_id, master_id или request_id")
