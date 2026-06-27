@@ -17,7 +17,7 @@ export function NotificationsScreen({ user, onUnreadChange }: { user: AuthUser; 
     new_request: "text-neon-cyan", bid_accepted: "text-green-400",
   };
 
-  const [localNotifs, setLocalNotifs] = useState(user.role === "client" ? notifications : []);
+  const [localNotifs, setLocalNotifs] = useState<ApiNotif[]>([]);
   const [apiNotifs, setApiNotifs] = useState<ApiNotif[]>([]);
   const [loading, setLoading] = useState(true);
 
