@@ -3,6 +3,18 @@ import Icon from "@/components/ui/icon";
 import { API, AuthUser } from "./appTypes";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 
+const CATEGORY_ICONS: Record<string, string> = {
+  "ТО": "Droplets", "Электрика": "Zap", "Ходовая": "Dribbble",
+  "Кузов": "Shield", "Двигатели": "Settings", "Шиномонтаж": "CircleDot",
+  "Русификация": "Languages", "Другое": "MoreHorizontal",
+};
+
+const BID_STATUS: Record<string, { label: string; color: string }> = {
+  pending:  { label: "Ожидает", color: "text-yellow-400 bg-yellow-400/10 border-yellow-400/30" },
+  accepted: { label: "Принят",  color: "text-neon-cyan bg-neon-cyan/10 border-neon-cyan/30" },
+  rejected: { label: "Отклонён", color: "text-destructive bg-destructive/10 border-destructive/30" },
+};
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface IncomingRequest {
@@ -188,18 +200,6 @@ export function MasterRequestsScreen({ user, onOpenChat }: {
   const handleBidSuccess = () => {
     setBidTarget(null);
     load();
-  };
-
-  const CATEGORY_ICONS: Record<string, string> = {
-    "ТО": "Droplets", "Электрика": "Zap", "Ходовая": "Dribbble",
-    "Кузов": "Shield", "Двигатели": "Settings", "Шиномонтаж": "CircleDot",
-    "Русификация": "Languages", "Другое": "MoreHorizontal",
-  };
-
-  const BID_STATUS: Record<string, { label: string; color: string }> = {
-    pending:  { label: "Ожидает", color: "text-yellow-400 bg-yellow-400/10 border-yellow-400/30" },
-    accepted: { label: "Принят",  color: "text-neon-cyan bg-neon-cyan/10 border-neon-cyan/30" },
-    rejected: { label: "Отклонён", color: "text-destructive bg-destructive/10 border-destructive/30" },
   };
 
   return (

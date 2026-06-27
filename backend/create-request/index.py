@@ -113,8 +113,8 @@ def handler(event: dict, context) -> dict:
     for m in masters:
         m["rating"] = float(m["rating"])
 
-    # Создаём уведомления всем уведомлённым мастерам
-    for m in masters:
+    # Создаём уведомления всем уведомлённым мастерам (batch INSERT)
+    if masters:
         if master_id:
             notif_type = "personal_request"
             notif_title = "Персональный запрос"
@@ -123,13 +123,14 @@ def handler(event: dict, context) -> dict:
             notif_type = "new_request"
             notif_title = f"Новая заявка: {service}"
             notif_text = f"Автомобиль: {car}" + (f" — {description[:80]}" if description else "")
-        cur.execute(
+        psycopg2.extras.execute_values(
+            cur,
             """
             INSERT INTO t_p3896276_service_station_app.notifications
                 (master_id, type, title, text, request_id)
-            VALUES (%s, %s, %s, %s, %s)
+            VALUES %s
             """,
-            (m["id"], notif_type, notif_title, notif_text, request_id),
+            [(m["id"], notif_type, notif_title, notif_text, request_id) for m in masters],
         )
 
     conn.commit()

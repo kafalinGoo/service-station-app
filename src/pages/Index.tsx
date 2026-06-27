@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Icon from "@/components/ui/icon";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
 
@@ -127,27 +127,27 @@ export default function Index() {
       .catch(() => {});
   }, [screen, user]);
 
-  const goToNewRequest = (masterId?: number, service?: string) => {
+  const goToNewRequest = useCallback((masterId?: number, service?: string) => {
     setTargetMasterId(masterId ?? null);
     setPreselectedService(service ?? "");
     setScreen("new-request");
-  };
+  }, []);
 
-  const openChatWithRequest = (requestId: number, masterName: string, masterAvatar: string) => {
+  const openChatWithRequest = useCallback((requestId: number, masterName: string, masterAvatar: string) => {
     setChatContext({ requestId, masterName, masterAvatar });
     setChatOpen(true);
-  };
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     clearUser();
     setUser(null);
     setScreen("home");
-  };
+  }, []);
 
-  const handleAuth = (u: AuthUser) => {
+  const handleAuth = useCallback((u: AuthUser) => {
     setUser(u);
     setScreen(u.role === "master" ? "master-requests" : "home");
-  };
+  }, []);
 
   if (splash) {
     return <SplashScreen onDone={() => setSplash(false)} />;

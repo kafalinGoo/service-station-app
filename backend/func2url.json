@@ -1,4 +1,5 @@
 {
+  "check-expired-requests": "https://functions.poehali.dev/a613de72-fac9-4a23-8cfc-6ca6d6df6fce",
   "send-push": "https://functions.poehali.dev/b726cf92-1a47-4b25-ab28-fc9d5664884a",
   "push-subscribe": "https://functions.poehali.dev/ea9857bb-2ecf-4f2b-b2fb-b8afdbc866ac",
   "upload-photo": "https://functions.poehali.dev/a425d163-4d44-4a96-8d8b-e361857bc3a7",

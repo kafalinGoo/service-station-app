@@ -27,22 +27,21 @@ def handler(event: dict, context) -> dict:
         SET status = 'expired'
         WHERE status = 'open'
           AND created_at < NOW() - INTERVAL '24 hours'
-          AND id NOT IN (
-              SELECT DISTINCT request_id FROM {SCHEMA}.bids
+          AND NOT EXISTS (
+              SELECT 1 FROM {SCHEMA}.bids b WHERE b.request_id = {SCHEMA}.requests.id
           )
         RETURNING id, client_id
     """)
     closed = cur.fetchall()
     conn.commit()
 
-    for req_id, client_id in closed:
-        cur.execute(f"""
-            INSERT INTO {SCHEMA}.notifications (user_id, type, title, text, request_id)
-            VALUES (%s, 'expired_request', 'Заявка не нашла мастера',
-                    'К сожалению, на вашу заявку никто не откликнулся.',
-                    %s)
-        """, (client_id, req_id))
-    conn.commit()
+    if closed:
+        values = ",".join(
+            cur.mogrify("(%s,'expired_request','Заявка не нашла мастера','К сожалению, на вашу заявку никто не откликнулся.',%s)", (client_id, req_id)).decode()
+            for req_id, client_id in closed
+        )
+        cur.execute(f"INSERT INTO {SCHEMA}.notifications (user_id, type, title, text, request_id) VALUES {values}")
+        conn.commit()
 
     cur.close()
     conn.close()

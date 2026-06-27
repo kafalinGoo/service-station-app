@@ -6,7 +6,7 @@
       "path": "/",
       "expectedStatus": 200,
       "bodyMatcher": "partial",
-      "expectedBody": {"ids": []}
+      "expectedBody": {"closed": 0}
     }
   ]
 }
