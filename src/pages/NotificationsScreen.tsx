@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import {
   API, AuthUser,
-  notifications,
   ApiNotif, formatNotifTime,
 } from "./appTypes";
 
